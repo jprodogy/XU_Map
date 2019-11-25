@@ -32,7 +32,7 @@ public class GraphMap {
 
     public void addEgde(Location source, Location destination, int weight) {
         Edge edge = new Edge(source, destination, weight);
-        adjacencylist[source].addFirst(edge);
+        adjacencylist[0].addFirst(edge);
     }
 
     public Edge getEdge(int source, int destination){
