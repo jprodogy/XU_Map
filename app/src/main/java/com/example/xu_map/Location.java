@@ -8,15 +8,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Location {
     private String buildName;
     private int buildNum;
-    private ArrayList<String> street;
+    //Todo: Change Arraylist to list
+    private List<String> street;
     private double longitude;
     private double latitude;
-    private ArrayList<String> category;
-    private ArrayList<String> department;
+    private List<String> category;
+    private List<String> department;
     private Context context;
 
 
@@ -45,7 +47,7 @@ public class Location {
         return buildNum;
     }
 
-    public ArrayList<String> getStreet() {
+    public List<String> getStreet() {
         return street;
     }
 
@@ -61,11 +63,11 @@ public class Location {
         return latitude;
     }
 
-    public ArrayList<String> getCategory() {
+    public List<String> getCategory() {
         return category;
     }
 
-    public ArrayList<String> getDepartment() {
+    public List<String> getDepartment() {
         return department;
     }
 

@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,5 +41,63 @@ public class Objects {
     public Location getLocation(String str){
         return newObjects.get(str);
     }
+
+    public Location getLocViaName(String name){
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getBuildName().equals(name)){
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public Location getLocViaNum(int num){
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getBuildNum() == num){
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Location> getAllViaStrt(String strt){
+        ArrayList<Location> locs = new ArrayList<>();
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getStreet().contains(strt)){
+                locs.add(entry.getValue());
+            }
+        }
+        return locs;
+    }
+
+    public ArrayList<Location> getAllViaLatLong(double lat, double lon){
+        ArrayList<Location> locs = new ArrayList<>();
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getLatitude() <= lat && entry.getValue().getLongitude() >= lon){
+                locs.add(entry.getValue());
+            }
+        }
+        return locs;
+
+    }
+    public ArrayList<Location> getAllViaCat(String cat){
+        ArrayList<Location> locs = new ArrayList<>();
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getCategory().contains(cat)){
+                locs.add(entry.getValue());
+            }
+        }
+        return locs;
+    }
+    public ArrayList<Location> getAllViaDept(String dept){
+        ArrayList<Location> locs = new ArrayList<>();
+        for (Map.Entry<String,Location> entry : newObjects.entrySet()){
+            if (entry.getValue().getDepartment().contains(dept)){
+                locs.add(entry.getValue());
+            }
+        }
+        return locs;
+    }
+
 
 }
