@@ -23,55 +23,48 @@ public class GraphMap {
     }
 
     public GraphMap(){
-        new HashMap<>();
+        XU_Map = new HashMap<>();
     }
 
     public void addVertex(Location loc){
-        try{
-            XU_Map.put(loc, new LinkedList<Edge>());
-        }catch (NullPointerException e){
-           // Log.d("MainActivity", "It did not work");
-        }
+        XU_Map.put(loc, new LinkedList<Edge>());
+
     }
 
     public void addEdge(Location source, Location destination, int weight, boolean bidirectional){
 
         Edge edge = new Edge(source, destination, weight);
-        try{
-            if (!XU_Map.containsKey(source)){
-                addVertex(source);
-            }
 
-            if (!XU_Map.containsKey(destination)){
-                addVertex(destination);
-            }
-
-            XU_Map.get(source).add(edge);
-            Log.d("MainActivity", String.valueOf(XU_Map.get(source.getBuildName()).getFirst()));
-
-            if (bidirectional == true) {
-                XU_Map.get(destination).add(edge);
-            }
-        }catch (NullPointerException e){
-
+        if (!XU_Map.containsKey(source)){
+            addVertex(source);
         }
+
+        if (!XU_Map.containsKey(destination)){
+            addVertex(destination);
+        }
+
+        XU_Map.get(source).add(edge);
+
+        if (bidirectional == true) {
+            XU_Map.get(destination).add(edge);
+        }
+
 
     }
 
     public LinkedList<Edge> getEdges(Location source){
-        try{
-            return XU_Map.get(source);
-        }catch (NullPointerException e){
-            return null;
-        }
+
+        return XU_Map.get(source);
+
 
     }
     public Set<Location> getVertices(){
-        try{
-            return XU_Map.keySet();
-        }catch (NullPointerException e){
-            return null;
-        }
+        return XU_Map.keySet();
+
+    }
+
+    public void OptimalPath(){
+
     }
 
     @Override
@@ -83,7 +76,7 @@ public class GraphMap {
             for (Location v : XU_Map.keySet()) {
                 builder.append(v.getBuildName() + ": ");
                 for (Edge w : XU_Map.get(v)) {
-                    builder.append(w.toString() + " ");
+                    builder.append(w.destination.getBuildName() + " ");
                 }
                 builder.append("\n");
             }
