@@ -1,14 +1,14 @@
 package com.example.xu_map;
 
-import java.util.ArrayList;
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GraphMap {
-    int vertices;
-    LinkedList<Edge>[] adjacencylist;
+    Map<Location, LinkedList<Edge>> XU_Map;
 
     static class Edge {
         Location source;
@@ -22,33 +22,76 @@ public class GraphMap {
         }
     }
 
+    public GraphMap(){
+        new HashMap<>();
+    }
 
-    public GraphMap(int vertices) {
-        this.vertices = vertices;
-        adjacencylist = new LinkedList[vertices];
-
-        for (int i = 0; i < vertices; i++) {
-            adjacencylist[i] = new LinkedList<>();
+    public void addVertex(Location loc){
+        try{
+            XU_Map.put(loc, new LinkedList<Edge>());
+        }catch (NullPointerException e){
+           // Log.d("MainActivity", "It did not work");
         }
     }
 
-    public void addEgde(Location source, Location destination, int weight) {
+    public void addEdge(Location source, Location destination, int weight, boolean bidirectional){
+
         Edge edge = new Edge(source, destination, weight);
-        adjacencylist[0].addFirst(edge);
-    }
-
-    public Edge getEdge(int source, int destination){
-        return adjacencylist[source].get(destination);
-    }
-
-    public void printGraph() {
-        for (int i = 0; i < vertices; i++) {
-            LinkedList<Edge> list = adjacencylist[i];
-            for (int j = 0; j < list.size(); j++) {
-                System.out.println("vertex-" + i + " is connected to " +
-                        list.get(j).destination + " with weight " + list.get(j).weight);
+        try{
+            if (!XU_Map.containsKey(source)){
+                addVertex(source);
             }
+
+            if (!XU_Map.containsKey(destination)){
+                addVertex(destination);
+            }
+
+            XU_Map.get(source).add(edge);
+            Log.d("MainActivity", String.valueOf(XU_Map.get(source.getBuildName()).getFirst()));
+
+            if (bidirectional == true) {
+                XU_Map.get(destination).add(edge);
+            }
+        }catch (NullPointerException e){
+
+        }
+
+    }
+
+    public LinkedList<Edge> getEdges(Location source){
+        try{
+            return XU_Map.get(source);
+        }catch (NullPointerException e){
+            return null;
+        }
+
+    }
+    public Set<Location> getVertices(){
+        try{
+            return XU_Map.keySet();
+        }catch (NullPointerException e){
+            return null;
         }
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        try{
+            for (Location v : XU_Map.keySet()) {
+                builder.append(v.getBuildName() + ": ");
+                for (Edge w : XU_Map.get(v)) {
+                    builder.append(w.toString() + " ");
+                }
+                builder.append("\n");
+            }
+        }catch (NullPointerException e){
+
+        }
+
+
+        return (builder.toString());
+    }
 }

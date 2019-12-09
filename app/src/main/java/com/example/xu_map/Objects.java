@@ -1,6 +1,7 @@
 package com.example.xu_map;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,32 +10,42 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Objects {
     Map<String, Location> newObjects;
-    Context context;
+    private Context context;
+    private BufferedReader bReader;
 
-    public Objects(){
+    public Objects(Context current){
         newObjects = new HashMap();
+        context = current;
 
     }
 
-    public void CreateObjects(Context current){
-        context = current;
+    public void CreateObjects(){
         InputStream ip = context.getResources().openRawResource(R.raw.locations);
-        BufferedReader bReader = new BufferedReader(new InputStreamReader(ip, Charset.defaultCharset()));
+        bReader = new BufferedReader(new InputStreamReader(ip, Charset.defaultCharset()));
+
+
         try{
             String line;
             while((line = bReader.readLine()) != null){
                 String[] data = line.split(",");
                 Location loc = new Location(data[0],Integer.parseInt(data[1]),data[2].split("/"),Double.valueOf(data[3]),Double.valueOf(data[4]),data[5].split("/"), data[6].split("/"));
                 newObjects.put(data[0],loc);
+
             }
         }catch (IOException e){
 
         }
+
+
+
     }
 
 
