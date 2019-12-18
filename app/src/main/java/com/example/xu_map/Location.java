@@ -19,7 +19,6 @@ public class Location {
     private double latitude;
     private List<String> category;
     private List<String> department;
-    private Context context;
 
 
 

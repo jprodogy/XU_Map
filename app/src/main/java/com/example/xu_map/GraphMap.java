@@ -8,64 +8,63 @@ import java.util.Map;
 import java.util.Set;
 
 public class GraphMap {
-    Map<Location, LinkedList<Edge>> XU_Map;
+    Map<Location, LinkedList<Edge>> xuMap;
+    private int vertCount;
 
     static class Edge {
-        Location source;
         Location destination;
         int weight;
 
-        public Edge(Location source, Location destination, int weight) {
-            this.source = source;
+        public Edge(Location destination, int weight) {
             this.destination = destination;
             this.weight = weight;
         }
     }
 
     public GraphMap(){
-        XU_Map = new HashMap<>();
+        xuMap = new HashMap<>();
     }
 
     public void addVertex(Location loc){
-        XU_Map.put(loc, new LinkedList<Edge>());
+        if (!xuMap.containsKey(loc)){
+            xuMap.put(loc, new LinkedList<Edge>());
+        }else{
+            Log.d("MainActivity", "The graph already contains this Location");
+        }
+
 
     }
 
     public void addEdge(Location source, Location destination, int weight, boolean bidirectional){
 
-        Edge edge = new Edge(source, destination, weight);
+        Edge edge = new Edge(destination, weight);
 
-        if (!XU_Map.containsKey(source)){
+        if (!xuMap.containsKey(source)){
             addVertex(source);
         }
 
-        if (!XU_Map.containsKey(destination)){
+        if (!xuMap.containsKey(destination)){
             addVertex(destination);
         }
 
-        XU_Map.get(source).add(edge);
+        xuMap.get(source).add(edge);
 
         if (bidirectional == true) {
-            XU_Map.get(destination).add(edge);
+            xuMap.get(destination).add(edge);
         }
 
 
     }
 
     public LinkedList<Edge> getEdges(Location source){
-
-        return XU_Map.get(source);
-
-
+        return xuMap.get(source);
     }
+
     public Set<Location> getVertices(){
-        return XU_Map.keySet();
+        return xuMap.keySet();
 
     }
 
-    public void OptimalPath(){
-
-    }
 
     @Override
     public String toString()
@@ -73,9 +72,9 @@ public class GraphMap {
         StringBuilder builder = new StringBuilder();
 
         try{
-            for (Location v : XU_Map.keySet()) {
+            for (Location v : xuMap.keySet()) {
                 builder.append(v.getBuildName() + ": ");
-                for (Edge w : XU_Map.get(v)) {
+                for (Edge w : xuMap.get(v)) {
                     builder.append(w.destination.getBuildName() + " ");
                 }
                 builder.append("\n");
