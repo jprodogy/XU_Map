@@ -60,6 +60,16 @@ public class GraphMap {
         return xuMap.get(source);
     }
 
+    public Edge getEdge(Location source, Location dest){
+        LinkedList<Edge> temp = xuMap.get(source);
+        for (int i = 0; i < temp.size(); i++) {
+            if (temp.get(i).equals(dest)){
+                return temp.get(i);
+            }
+        }
+        return null;
+    }
+
     public Set<Location> getVertices(){
         return xuMap.keySet();
 

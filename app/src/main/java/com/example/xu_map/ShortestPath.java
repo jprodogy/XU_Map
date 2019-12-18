@@ -1,21 +1,26 @@
 package com.example.xu_map;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 class ShortestPath {
     static final int V = 9;
-    int minDistance(int dist[], Boolean sptSet[])
+    Location minDistance(Map<Location, Integer> dist, Map<Location, Boolean> settled)
     {
-        int min = Integer.MAX_VALUE, min_index = -1;
+        int min = Integer.MAX_VALUE;
+        Location min_loc = null;
 
-        for (int v = 0; v < V; v++)
-            if (sptSet[v] == false && dist[v] <= min) {
-                min = dist[v];
-                min_index = v;
+        for (Location value : dist.keySet()) {
+            if (settled.get(value) == false && dist.get(value) <= min){
+                min = dist.get(value);
+                min_loc = value;
             }
+        }
 
-        return min_index;
+        return min_loc;
     }
 
     void printSolution(int dist[], int n)
@@ -26,37 +31,35 @@ class ShortestPath {
     }
 
 
-    void dijkstra(GraphMap graph, Location src) {
-        int dist[] = new int[V];
+    void dijkstra(GraphMap graph, Location src, Location dest) {
+        Map<Location,Integer> dist = new HashMap<>();
+        Map<Location, Boolean> settled = new HashMap<>();
 
-        Boolean sptSet[] = new Boolean[V];
-
-        for (int i = 0; i < V; i++) {
-            dist[i] = Integer.MAX_VALUE;
-            sptSet[i] = false;
+        for (Location value : graph.getVertices()) {
+            dist.put(value, Integer.MAX_VALUE);
+            settled.put(value, false);
         }
 
-        dist[src] = 0;
+        dist.put(src, 0);
 
-        for (int count = 0; count < V - 1; count++) {
+        for (int count = 0; count < dist.size() - 1; count++) {
+            Location u = minDistance(dist, settled);
+            settled.put(u, true);
 
-            int u = minDistance(dist, sptSet);
-            sptSet[u] = true;
 
-            // Update dist value of the adjacent vertices of the
-            // picked vertex. 
-            for (int v = 0; v < V; v++)
+            for (Location v : graph.getVertices()){
+                if (!settled.get(v) &&
+                        graph.getEdge(u,v).weight != 0 &&
+                        dist.get(u) != Integer.MAX_VALUE &&
+                        dist.get(u) + graph.getEdge(u,v).weight < dist.get(v)){
+                    dist.put(v, dist.get(u) + graph.getEdge(u,v).weight);
+                }
+            }
 
-                // Update dist[v] only if is not in sptSet, there is an
-                // edge from u to v, and total weight of path from src to
-                // v through u is smaller than current value of dist[v]
-                if (!sptSet[v] && graph[u][v] != 0 &&
-                        dist[u] != Integer.MAX_VALUE && dist[u] + graph[u][v] < dist[v])
-                    dist[v] = dist[u] + graph[u][v];
         }
     }
 
-
+/*
     public int CalcShortestDis(Queue<Location> locQ){
 
     }
@@ -64,4 +67,6 @@ class ShortestPath {
     public int CalcShortestDis(List<Location> locList){
 
     }
+    */
+
 }
