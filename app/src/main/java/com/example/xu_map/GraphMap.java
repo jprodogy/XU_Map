@@ -31,8 +31,6 @@ public class GraphMap {
         }else{
             Log.d("MainActivity", "The graph already contains this Location");
         }
-
-
     }
 
     public void addEdge(Location source, Location destination, int weight, boolean bidirectional){
@@ -52,8 +50,6 @@ public class GraphMap {
         if (bidirectional == true) {
             xuMap.get(destination).add(edge);
         }
-
-
     }
 
     public LinkedList<Edge> getEdges(Location source){
@@ -61,12 +57,17 @@ public class GraphMap {
     }
 
     public Edge getEdge(Location source, Location dest){
+        Log.d("MainActivity", source.getBuildName());
+
         LinkedList<Edge> temp = xuMap.get(source);
         for (int i = 0; i < temp.size(); i++) {
-            if (temp.get(i).equals(dest)){
+            if (temp.get(i).destination.equals(dest)){
                 return temp.get(i);
             }
+            //Log.d("MainActivity", temp.get(i).destination.getBuildName() + "||" + dest.getBuildName());
+
         }
+
         return null;
     }
 
@@ -74,7 +75,6 @@ public class GraphMap {
         return xuMap.keySet();
 
     }
-
 
     @Override
     public String toString()
@@ -89,11 +89,9 @@ public class GraphMap {
                 }
                 builder.append("\n");
             }
-        }catch (NullPointerException e){
+        }catch (NullPointerException e) {
 
         }
-
-
         return (builder.toString());
     }
 }

@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ObjectCreator();
         MapCreator();
+        ShortestPath();
     }
 
     public void ObjectCreator(){
@@ -34,13 +35,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         gm.addEdge(obj.getLocation("NCF Addition"), obj.getLocation("Music Building"), 5, true);
+        gm.addEdge(obj.getLocation("NCF Addition"), obj.getLocation("College of Pharmacy"), 6, true);
         gm.addEdge(obj.getLocation("Administration Building"), obj.getLocation("NCF Addition"), 4, true);
         gm.addEdge(obj.getLocation("Pharmacy Addition"), obj.getLocation("Administration Building"), 6, true);
         gm.addEdge(obj.getLocation("University Center"), obj.getLocation("Pharmacy Addition"), 3, true);
         gm.addEdge(obj.getLocation("College of Pharmacy"), obj.getLocation("University Center"), 2, true);
         gm.addEdge(obj.getLocation("Music Building"), obj.getLocation("College of Pharmacy"), 7, true);
 
-        Log.d(TAG, gm.toString());
+        //Log.d(TAG, gm.toString());
+    }
+
+    public void ShortestPath(){
+        ShortestPath spt = new ShortestPath(gm);
+        spt.Dijkstra(obj.getLocation("NCF Addition"),obj.getLocation("College of Pharmacy"));
     }
 
 }
