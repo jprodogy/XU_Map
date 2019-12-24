@@ -126,7 +126,11 @@ public class ShortestPath {
             }
         }
 
-        return PathFinder(min_index);
+        if (min == Integer.MAX_VALUE){
+            return " ";
+        }else{
+            return PathFinder(min_index);
+        }
     }
 /*
 
