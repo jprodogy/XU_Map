@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
         gm.addEdge(obj.getLocation("College of Pharmacy"), obj.getLocation("University Center"), 2, true);
         gm.addEdge(obj.getLocation("Music Building"), obj.getLocation("College of Pharmacy"), 7, true);
 
-        //Log.d(TAG, gm.toString());
     }
 
     public void ShortestPath(){

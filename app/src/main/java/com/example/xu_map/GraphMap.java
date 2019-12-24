@@ -57,14 +57,12 @@ public class GraphMap {
     }
 
     public Edge getEdge(Location source, Location dest){
-        Log.d("MainActivity", source.getBuildName());
 
         LinkedList<Edge> temp = xuMap.get(source);
         for (int i = 0; i < temp.size(); i++) {
             if (temp.get(i).destination.equals(dest)){
                 return temp.get(i);
             }
-            //Log.d("MainActivity", temp.get(i).destination.getBuildName() + "||" + dest.getBuildName());
 
         }
 

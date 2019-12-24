@@ -91,6 +91,7 @@ public class Objects {
         return locs;
 
     }
+
     public ArrayList<Location> getAllViaCat(String cat){
         ArrayList<Location> locs = new ArrayList<>();
         for (Map.Entry<String,Location> entry : newObjects.entrySet()){
@@ -100,6 +101,7 @@ public class Objects {
         }
         return locs;
     }
+
     public ArrayList<Location> getAllViaDept(String dept){
         ArrayList<Location> locs = new ArrayList<>();
         for (Map.Entry<String,Location> entry : newObjects.entrySet()){
