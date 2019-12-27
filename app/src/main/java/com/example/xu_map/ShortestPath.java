@@ -3,6 +3,7 @@ package com.example.xu_map;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 
@@ -17,6 +18,7 @@ public class ShortestPath {
         int dist;
         Boolean settled;
         Node parent;
+
 
         public Node(Location loc, int dist, Boolean settled) {
             this.loc = loc;
@@ -77,6 +79,7 @@ public class ShortestPath {
     }
 
 
+
     public void Dijkstra(Location src) {
 
 
@@ -132,15 +135,47 @@ public class ShortestPath {
             return PathFinder(min_index);
         }
     }
-/*
 
-    public int CalcShortestPath(Queue<Location> locQ){
 
+    public List<Location> CalcShortestPath(Queue<Location> locQ){
+        List<Location> pathList = new ArrayList<>();
+        if (locQ.isEmpty()){
+            return pathList;
+        }
+        Location temp = locQ.poll();
+
+        pathList.add(temp);
+        Dijkstra(temp);
+
+        while(!locQ.isEmpty()){
+            Location minLoc = null;
+            for (int i = 0; i < distPath.size(); i++) {
+                int minDist = Integer.MAX_VALUE;
+
+                if (distPath.get(i).parent.loc == temp && distPath.get(i).dist < minDist){
+                    minLoc = distPath.get(i).loc;
+                }
+            }
+            if (minLoc == null){
+                return Collections.emptyList();
+            }
+            pathList.add(minLoc);
+            temp = locQ.poll();
+        }
+
+        return pathList;
     }
 
-    public int CalcShortestPath(List<Location> locList){
-
+    public List<Location> CalcShortestPath(List<Location> locList){
+        List<Location> pathList = new ArrayList<>();
+        if (locList.size() == 0){
+            return pathList;
+        }
+        int pathCounter = 0;
+        for (int i = 0; i < locList.size(); i++) {
+            Dijkstra(locList.get(i));
+        }
     }
-*/
+
 
 }

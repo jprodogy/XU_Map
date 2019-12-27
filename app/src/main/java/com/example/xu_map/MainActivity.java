@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void ShortestPath(){
         ShortestPath spt = new ShortestPath(gm);
-        spt.Dijkstra(obj.getLocation("NCF Addition"),obj.getLocation("College of Pharmacy"));
+        spt.Dijkstra(obj.getLocation("NCF Addition"));
     }
 
 }
