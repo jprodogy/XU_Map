@@ -3,7 +3,6 @@ package com.example.xu_map;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
@@ -65,16 +64,24 @@ public class ShortestPath {
         }
     }
 
+    public String PathtoString(List<Location> pathList){
+        StringBuilder strB = new StringBuilder();
+        strB.append("Path: ");
+        for (int i = 0; i < pathList.size(); i++) {
+            strB.append(pathList.get(i).getBuildName() + " ");
+        }
+        Log.d("PrintPath", strB.toString());
+        return strB.toString();
+    }
+
     public List<Location> PathFinder(int i){
         ArrayList<Location> pathList = new ArrayList<>();
         Node temp = distPath.get(i);
-
         if(distPath.get(i).parent != null){
             while(temp != null){
                 pathList.add(0, temp.loc);
                 temp = temp.parent;
             }
-            Log.d("RealActivity", "Path: " + pathList.toString());
         }
         return pathList;
     }
@@ -82,8 +89,7 @@ public class ShortestPath {
 
 
     public void Dijkstra(Location src) {
-
-
+        distPath = new ArrayList<>();
         for (Location value : graph.getVertices()) {
             if (value.equals(src)) {
                 distPath.add(new Node(value, 0, false));
@@ -119,7 +125,7 @@ public class ShortestPath {
 
 
 
-    public List<Location> CalcShortestDis(Location src, Location dest){
+    public List<Location> CalcShortestPath(Location src, Location dest){
         Dijkstra(src);
         int min = Integer.MAX_VALUE;
         int min_index = 0;
@@ -133,6 +139,11 @@ public class ShortestPath {
         if (min == Integer.MAX_VALUE){
             return Collections.EMPTY_LIST;
         }else{
+            List<Location> pathList = PathFinder(min_index);
+            ArrayList<String> listCheck = new ArrayList();
+            for (int i = 0; i < pathList.size() -1; i++) {
+                listCheck.add(pathList.get(i).getBuildName());
+            }
             return PathFinder(min_index);
         }
     }
@@ -152,9 +163,10 @@ public class ShortestPath {
             Location minLoc = null;
             for (int i = 0; i < distPath.size(); i++) {
                 int minDist = Integer.MAX_VALUE;
-
-                if (distPath.get(i).parent.loc == temp && distPath.get(i).dist < minDist){
-                    minLoc = distPath.get(i).loc;
+                if (distPath.get(i).parent != null){
+                    if (distPath.get(i).parent.loc == temp && distPath.get(i).dist < minDist){
+                        minLoc = distPath.get(i).loc;
+                    }
                 }
             }
             if (minLoc == null){
@@ -177,10 +189,15 @@ public class ShortestPath {
             int min = Integer.MAX_VALUE;
 
             Dijkstra(locList.get(i));
+
             for (int j = 0; j < distPath.size(); j++) {
                 List<Location> tempPath = PathFinder(j);
-                if (locList.containsAll(tempPath) && distPath.get(j).dist < min){
+                if (tempPath.containsAll(locList) && distPath.get(j).dist < min){
                     pathList = tempPath;
+                    min = distPath.get(j).dist;
+
+                    Log.d("templist", distPath.get(j).loc.getBuildName() + " " + distPath.get(j).dist);
+
                 }
             }
         }
