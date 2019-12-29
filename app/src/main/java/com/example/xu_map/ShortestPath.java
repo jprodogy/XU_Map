@@ -119,7 +119,7 @@ public class ShortestPath {
                 }
         }
 
-        PrintSolution();
+        //PrintSolution();
     }
 
 
@@ -139,11 +139,6 @@ public class ShortestPath {
         if (min == Integer.MAX_VALUE){
             return Collections.EMPTY_LIST;
         }else{
-            List<Location> pathList = PathFinder(min_index);
-            ArrayList<String> listCheck = new ArrayList();
-            for (int i = 0; i < pathList.size() -1; i++) {
-                listCheck.add(pathList.get(i).getBuildName());
-            }
             return PathFinder(min_index);
         }
     }
@@ -195,9 +190,6 @@ public class ShortestPath {
                 if (tempPath.containsAll(locList) && distPath.get(j).dist < min){
                     pathList = tempPath;
                     min = distPath.get(j).dist;
-
-                    Log.d("templist", distPath.get(j).loc.getBuildName() + " " + distPath.get(j).dist);
-
                 }
             }
         }

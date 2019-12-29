@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -50,17 +51,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void ShortestPath(){
         ShortestPath spt = new ShortestPath(gm);
-       // spt.Dijkstra(obj.getLocation("NCF Addition"));
-        // spt.CalcShortestPath(obj.getLocation("NCF Addition"), obj.getLocation("Administration Building"));
         Queue<Location> locations = new LinkedList<>();
+        List<Location> locations1 = new ArrayList<>(Arrays.asList(obj.getLocation("NCF Addition"), obj.getLocation("Administration Building"),obj.getLocation("Pharmacy Addition")));
+
         locations.add(obj.getLocation("NCF Addition"));
         locations.add(obj.getLocation("College of Pharmacy"));
         locations.add(obj.getLocation("University Center"));
-        List<Location> locations1 = new ArrayList<>();
-        locations1.add(obj.getLocation("NCF Addition"));
-        locations1.add(obj.getLocation("Administration Building"));
-        locations1.add(obj.getLocation("Pharmacy Addition"));
+
+        spt.CalcShortestPath(obj.getLocation("NCF Addition"), obj.getLocation("Administration Building"));
         spt.CalcShortestPath(locations);
+        spt.CalcShortestPath(locations1);
     }
 
 }
