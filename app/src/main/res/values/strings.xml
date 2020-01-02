@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">XU_Map</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="map_not_ready">Map is not ready yet</string>
+    <string name="clear_map">Clear</string>
+    <string name="reset_map">Reset</string>
+    <string name="default_info_window">Default info window</string>
+    <string name="custom_info_contents">Custom info contents</string>
+    <string name="custom_info_window">Custom info window</string>
+    <string name="drag_melbourne">Drag Melbourne</string>
+    <string name="flat">Flat</string>
+    <string name="rotation">Rotation:</string>
+
 </resources>
