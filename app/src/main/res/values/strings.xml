@@ -11,4 +11,21 @@
     <string name="flat">Flat</string>
     <string name="rotation">Rotation:</string>
 
+    <string name="make_an_order">Make an order</string>
+    <string name="dialog_title">Items available in a shop</string>
+    <string name="ok_label">OK</string>
+    <string name="dismiss_label">Dismiss</string>
+    <string name="clear_all_label">Clear all</string>
+
+    <string-array name="shopping_item">
+        <item>Administrative</item>
+        <item>Academic</item>
+        <item>Faith</item>
+        <item>Residential Halls</item>
+        <item>Recreation/Dining</item>
+        <item>Operations</item>
+        <item>Landmarks</item>
+        <item>Parking</item>
+    </string-array>
+
 </resources>
