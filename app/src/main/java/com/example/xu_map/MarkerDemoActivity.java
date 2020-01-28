@@ -247,7 +247,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                         for (Marker m: markerMap.keySet()){
 
                         }
-                        
+
  */
                     }
                 });
