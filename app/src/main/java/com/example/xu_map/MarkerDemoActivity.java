@@ -21,11 +21,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
@@ -41,6 +43,7 @@ import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -63,7 +66,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -78,19 +83,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         OnInfoWindowCloseListener,
         OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener {
 
-    private static final LatLng adminBuilding = new LatLng(29.964179,-90.107268);
 
-    private static final LatLng collegeOfPharmacy = new LatLng(29.965085,-90.106841);
-
-    private static final LatLng ncfScienceAnnex = new LatLng(29.965293,-90.108450);
-
-    private static final LatLng universityCenter = new LatLng(29.963263,-90.105653);
-
-    private static final LatLng musicBuilding = new LatLng(29.964705,-90.107895);
-
-    private static final LatLng chapel = new LatLng(29.965220,-90.106072);
-
-    private static final LatLng stMichaels = new LatLng(29.964763,-90.105660);
 
     /** Demonstrates customizing the info window and/or its contents. */
     class CustomInfoWindowAdapter implements InfoWindowAdapter {
@@ -127,31 +120,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         }
 
         private void render(Marker marker, View view) {
-            int badge;
-            // Use the equals() method on a Marker to check for equals.  Do not use ==.
-            if (marker.equals(mBrisbane)) {
-                badge = R.drawable.badge_qld;
-            } else if (marker.equals(mAdelaide)) {
-                badge = R.drawable.badge_sa;
-            } else if (marker.equals(mSydney)) {
-                badge = R.drawable.badge_nsw;
-            } else if (marker.equals(mMelbourne)) {
-                badge = R.drawable.badge_victoria;
-            } else if (marker.equals(mPerth)) {
-                badge = R.drawable.badge_wa;
-            } else if (marker.equals(mDarwin1)) {
-                badge = R.drawable.badge_nt;
-            } else if (marker.equals(mDarwin2)) {
-                badge = R.drawable.badge_nt;
-            } else if (marker.equals(mDarwin3)) {
-                badge = R.drawable.badge_nt;
-            } else if (marker.equals(mDarwin4)) {
-                badge = R.drawable.badge_nt;
-            } else {
-                // Passing 0 to setImageResource will clear the image view.
-                badge = 0;
-            }
-            ((ImageView) view.findViewById(R.id.badge)).setImageResource(badge);
 
             String title = marker.getTitle();
             TextView titleUi = ((TextView) view.findViewById(R.id.title));
@@ -179,21 +147,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     private GoogleMap mMap;
 
-    private Marker mPerth;
-
-    private Marker mSydney;
-
-    private Marker mBrisbane;
-
-    private Marker mAdelaide;
-
-    private Marker mMelbourne;
-
-    private Marker mDarwin1;
-    private Marker mDarwin2;
-    private Marker mDarwin3;
-    private Marker mDarwin4;
-
+    private Objects objList;
+    private Objects obj;
+    private GraphMap graphMap;
+    private Map<List<String>, Marker> markerMap;
 
     /**
      * Keeps track of the last selected marker (though it may no longer be selected).  This is
@@ -213,10 +170,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     private final Random mRandom = new Random();
 
-    Button mOrder;
-    String[] listItems;
-    boolean[] checkedItems;
-    ArrayList<Integer> mUserItems = new ArrayList<>();
+    private Button mOrder;
+    private String[] listItems;
+    private boolean[] checkedItems;
+    private ArrayList<Integer> mUserItems = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -249,6 +207,12 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mOrder = (Button) findViewById(R.id.btnOrder);
         listItems = getResources().getStringArray(R.array.shopping_item);
         checkedItems = new boolean[listItems.length];
+        objList = MainActivity.obj;
+        graphMap = MainActivity.gm;
+        markerMap = new HashMap<>();
+
+        obj = new Objects(this);
+        obj.CreateObjects();
 
         CreateDropdownMenu();
 
@@ -263,13 +227,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
-//                        if (isChecked) {
-//                            if (!mUserItems.contains(position)) {
-//                                mUserItems.add(position);
-//                            }
-//                        } else if (mUserItems.contains(position)) {
-//                            mUserItems.remove(position);
-//                        }
                         if(isChecked){
                             mUserItems.add(position);
                         }else{
@@ -282,13 +239,16 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 mBuilder.setPositiveButton(R.string.ok_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
-                        String item = "";
+                        List<String> item = new ArrayList<>();
                         for (int i = 0; i < mUserItems.size(); i++) {
-                            item = item + listItems[mUserItems.get(i)];
-                            if (i != mUserItems.size() - 1) {
-                                item = item + ", ";
-                            }
+                            item.add(listItems[mUserItems.get(i)]);
                         }
+/*
+                        for (Marker m: markerMap.keySet()){
+
+                        }
+                        
+ */
                     }
                 });
 
@@ -315,6 +275,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
@@ -340,78 +301,36 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
 
-        LatLngBounds bounds = new LatLngBounds.Builder()
-                .include(chapel)
-                .include(universityCenter)
-                .include(musicBuilding)
-                .include(adminBuilding)
-                .include(collegeOfPharmacy)
-                .include(ncfScienceAnnex)
-                .build();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
+
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+
+
+
+        for(Location val: obj.getAllLocs()){
+            LatLng coord = new LatLng(val.getLongitude(), val.getLatitude());
+            String dpmt = String.join(" ", val.getDepartment());
+            String cat = String.join(" ", val.getCategory());
+
+
+
+            bounds.include(coord);
+            Marker tempMark = mMap.addMarker(new MarkerOptions()
+                    .position(coord)
+                    .title(val.getBuildName())
+                    .snippet(val.getBuildNum() + " " + dpmt + " " + cat)
+
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+
+            markerMap.put(val.getCategory(), tempMark);
+        }
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+
+
     }
 
     private void addMarkersToMap() {
-        // Uses a colored icon.
-        mBrisbane = mMap.addMarker(new MarkerOptions()
-                .position(adminBuilding)
-                .title("Brisbane")
-                .snippet("Population: 2,074,200")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-        // Uses a custom icon with the info window popping out of the center of the icon.
-        mSydney = mMap.addMarker(new MarkerOptions()
-                .position(universityCenter)
-                .title("Sydney")
-                .snippet("Population: 4,627,300")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
-                .infoWindowAnchor(0.5f, 0.5f));
-
-        // Creates a draggable marker. Long press to drag.
-        mMelbourne = mMap.addMarker(new MarkerOptions()
-                .position(collegeOfPharmacy)
-                .title("Melbourne")
-                .snippet("Population: 4,137,400")
-                .draggable(true));
-
-        // Place four markers on top of each other with differing z-indexes.
-        mDarwin1 = mMap.addMarker(new MarkerOptions()
-                .position(ncfScienceAnnex)
-                .title("Darwin Marker 1")
-                .snippet("z-index 1")
-                .zIndex(1));
-        mDarwin2 = mMap.addMarker(new MarkerOptions()
-                .position(ncfScienceAnnex)
-                .title("Darwin Marker 2")
-                .snippet("z-index 2")
-                .zIndex(2));
-        mDarwin3 = mMap.addMarker(new MarkerOptions()
-                .position(ncfScienceAnnex)
-                .title("Darwin Marker 3")
-                .snippet("z-index 3")
-                .zIndex(3));
-        mDarwin4 = mMap.addMarker(new MarkerOptions()
-                .position(ncfScienceAnnex)
-                .title("Darwin Marker 4")
-                .snippet("z-index 4")
-                .zIndex(4));
-
-
-        // A few more markers for good measure.
-        mPerth = mMap.addMarker(new MarkerOptions()
-                .position(chapel)
-                .title("Perth")
-                .snippet("Population: 1,738,800"));
-        mAdelaide = mMap.addMarker(new MarkerOptions()
-                .position(musicBuilding)
-                .title("Adelaide")
-                .snippet("Population: 1,213,000"));
-
-        // Vector drawable resource as a marker icon.
-        mMap.addMarker(new MarkerOptions()
-                .position(stMichaels)
-                .icon(vectorToBitmap(R.drawable.ic_android, Color.parseColor("#A4C639")))
-                .title("Alice Springs"));
 
         // Creates a marker rainbow demonstrating how to create default marker icons of different
         // hues (colors).
@@ -429,7 +348,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     .flat(flat)
                     .rotation(rotation));
             mMarkerRainbow.add(marker);
+
         }
+
     }
 
     /**
@@ -511,34 +432,34 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        if (marker.equals(mPerth)) {
-            // This causes the marker at Perth to bounce into position when it is clicked.
-            final Handler handler = new Handler();
-            final long start = SystemClock.uptimeMillis();
-            final long duration = 1500;
 
-            final Interpolator interpolator = new BounceInterpolator();
+        // This causes the marker at Perth to bounce into position when it is clicked.
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        final long duration = 1500;
 
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    long elapsed = SystemClock.uptimeMillis() - start;
-                    float t = Math.max(
-                            1 - interpolator.getInterpolation((float) elapsed / duration), 0);
-                    marker.setAnchor(0.5f, 1.0f + 2 * t);
+        final Interpolator interpolator = new BounceInterpolator();
 
-                    if (t > 0.0) {
-                        // Post again 16ms later.
-                        handler.postDelayed(this, 16);
-                    }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = Math.max(
+                        1 - interpolator.getInterpolation((float) elapsed / duration), 0);
+                marker.setAnchor(0.5f, 1.0f + 2 * t);
+
+                if (t > 0.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
                 }
-            });
-        } else if (marker.equals(mAdelaide)) {
-            // This causes the marker at Adelaide to change color and alpha.
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
-            marker.setAlpha(mRandom.nextFloat());
-        }
+            }
+        });
+    /*
+        // This causes the marker at Adelaide to change color and alpha.
+        marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
+        marker.setAlpha(mRandom.nextFloat());
 
+*/
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
         marker.setZIndex(zIndex);

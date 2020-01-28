@@ -112,5 +112,13 @@ public class Objects {
         return locs;
     }
 
+    public ArrayList<Location> getAllLocs(){
+        ArrayList<Location> locs = new ArrayList<>();
+        for(Map.Entry<String,Location> entry: newObjects.entrySet()){
+            locs.add(entry.getValue());
+        }
+        return locs;
+    }
+
 
 }

@@ -15,8 +15,8 @@ import java.util.Queue;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private Objects obj;
-    private GraphMap gm;
+    public static Objects obj;
+    public static GraphMap gm;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

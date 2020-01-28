@@ -1,6 +1,7 @@
 package com.example.xu_map;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,10 +36,16 @@ public class Location {
         this.buildNum = buildNum;
         this.longitude = longitude;
         this.latitude = latitude;
+
         addStreet(street);
         addCategory(category);
         addDprt(department);
 
+        String stuff = "";
+        for (int i = 0; i < this.category.size(); i++) {
+            stuff+= this.category.get(i) + " ";
+        }
+        Log.d("Category", stuff);
 
     }
 
@@ -93,14 +100,16 @@ public class Location {
     }
 
     public void addCategory(String[] str){
+
         for (int i = 0; i < str.length; i++) {
-            street.add(str[i]);
+
+            category.add(str[i]);
         }
     }
 
     public void addDprt(String[] str){
         for (int i = 0; i < str.length; i++) {
-            street.add(str[i]);
+            department.add(str[i]);
         }
     }
 
