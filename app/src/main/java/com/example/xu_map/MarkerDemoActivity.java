@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This shows how to place markers on a map.
@@ -150,7 +151,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private Objects objList;
     private Objects obj;
     private GraphMap graphMap;
-    private Map<List<String>, Marker> markerMap;
+    private Map< Marker, List<String>> markerMap;
 
     /**
      * Keeps track of the last selected marker (though it may no longer be selected).  This is
@@ -222,6 +223,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 AlertDialog.Builder mBuilder = new AlertDialog.Builder(MarkerDemoActivity.this);
                 mBuilder.setTitle(R.string.dialog_title);
                 mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
@@ -243,12 +245,16 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                         for (int i = 0; i < mUserItems.size(); i++) {
                             item.add(listItems[mUserItems.get(i)]);
                         }
-/*
-                        for (Marker m: markerMap.keySet()){
+
+
+                        Log.d("Stuff2", String.valueOf(markerMap.size()));
+                        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
+                            entry.getKey().setVisible(listCheck(item, entry.getValue()));
 
                         }
 
- */
+
+
                     }
                 });
 
@@ -273,6 +279,15 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 mDialog.show();
             }
         });
+    }
+
+    public Boolean listCheck(List<String> list1, List<String> list2){
+        for (int i = 0; i < list1.size(); i++){
+            if (list2.contains(list1.get(i))){
+                return true;
+            }
+        }
+        return false;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -321,9 +336,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
+            markerMap.put(tempMark, val.getCategory());
 
-            markerMap.put(val.getCategory(), tempMark);
+
         }
+
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
 
@@ -336,6 +353,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // hues (colors).
         float rotation = mRotationBar.getProgress();
         boolean flat = mFlatBox.isChecked();
+
 
         int numMarkersInRainbow = 12;
         for (int i = 0; i < numMarkersInRainbow; i++) {
@@ -432,7 +450,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-
+/*
         // This causes the marker at Perth to bounce into position when it is clicked.
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
@@ -454,6 +472,8 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 }
             }
         });
+
+ */
     /*
         // This causes the marker at Adelaide to change color and alpha.
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
