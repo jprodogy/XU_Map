@@ -16,7 +16,9 @@
 
 package com.example.xu_map;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -28,6 +30,7 @@ import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
@@ -43,9 +46,11 @@ import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
@@ -82,6 +87,8 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         OnSeekBarChangeListener,
         OnInfoWindowLongClickListener,
         OnInfoWindowCloseListener,
+        GoogleMap.OnMyLocationButtonClickListener,
+        GoogleMap.OnMyLocationClickListener,
         OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener {
 
 
@@ -176,6 +183,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private boolean[] checkedItems;
     private ArrayList<Integer> mUserItems = new ArrayList<>();
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private boolean mPermissionDenied = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,7 +225,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         obj = new Objects(this);
         obj.CreateObjects();
 
+
+
         CreateDropdownMenu();
+
+
 
     }
 
@@ -223,7 +237,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 AlertDialog.Builder mBuilder = new AlertDialog.Builder(MarkerDemoActivity.this);
                 mBuilder.setTitle(R.string.dialog_title);
                 mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
@@ -272,6 +285,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                             checkedItems[i] = false;
                             mUserItems.clear();
                         }
+
+                        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
+                            entry.getKey().setVisible(true);
+                        }
                     }
                 });
 
@@ -311,6 +328,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setOnMarkerDragListener(this);
         mMap.setOnInfoWindowCloseListener(this);
         mMap.setOnInfoWindowLongClickListener(this);
+        mMap.setOnMyLocationButtonClickListener(this);
+        mMap.setOnMyLocationClickListener(this);
+        enableMyLocation();
 
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
@@ -332,7 +352,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             Marker tempMark = mMap.addMarker(new MarkerOptions()
                     .position(coord)
                     .title(val.getBuildName())
-                    .snippet(val.getBuildNum() + " " + dpmt + " " + cat)
+                    .snippet("Building #"+ val.getBuildNum() + "\n" + "Department: " + dpmt +"\n" + "Category: "  + cat)
 
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
@@ -340,11 +360,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
 
         }
-
-
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
-
-
     }
 
     private void addMarkersToMap() {
@@ -407,9 +423,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         if (!checkReady()) {
             return;
         }
-        // Clear the map because we don't want duplicates of the markers.
-        mMap.clear();
-        addMarkersToMap();
+        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
+            entry.getKey().setVisible(true);
+        }
+        addMarkersToMap ();
     }
 
     /** Called when the Reset button is clicked. */
@@ -450,6 +467,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+
 /*
         // This causes the marker at Perth to bounce into position when it is clicked.
         final Handler handler = new Handler();
@@ -493,6 +511,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         return false;
     }
 
+
+
+
     @Override
     public void onInfoWindowClick(Marker marker) {
         Toast.makeText(this, "Click Info Window", Toast.LENGTH_SHORT).show();
@@ -521,6 +542,87 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public void onMarkerDrag(Marker marker) {
         mTopText.setText("onMarkerDrag.  Current Position: " + marker.getPosition());
+    }
+
+    private void enableMyLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission to access the location is missing.
+            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
+                    Manifest.permission.ACCESS_FINE_LOCATION, true);
+        } else if (mMap != null) {
+            // Access to the location has been granted to the app.
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
+        // Return false so that we don't consume the event and the default behavior still occurs
+        // (the camera animates to the user's current position).
+        return false;
+    }
+
+    @Override
+    public void onMyLocationClick(@NonNull android.location.Location location) {
+        Toast.makeText(this, "Current location:\n" + location, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
+            return;
+        }
+
+        if (PermissionUtils.isPermissionGranted(permissions, grantResults,
+                Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // Enable the my location layer if the permission has been granted.
+            enableMyLocation();
+        } else {
+            // Display the missing permission error dialog when the fragments resume.
+            mPermissionDenied = true;
+        }
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (mPermissionDenied) {
+            // Permission was not granted, display error dialog.
+            showMissingPermissionError();
+            mPermissionDenied = false;
+        }
+    }
+
+    /**
+     * Displays a dialog with error message explaining that the location permission is missing.
+     */
+    private void showMissingPermissionError() {
+        PermissionUtils.PermissionDeniedDialog
+                .newInstance(true).show(getSupportFragmentManager(), "dialog");
+    }
+
+    private double distance(double lat1, double lon1, double lat2, double lon2) {
+        // haversine great circle distance approximation, returns meters
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2))
+                + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60; // 60 nautical miles per degree of seperation
+        dist = dist * 1852; // 1852 meters per nautical mile
+        return (dist);
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
     }
 
 }
