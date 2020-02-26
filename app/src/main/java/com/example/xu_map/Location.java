@@ -23,7 +23,7 @@ public class Location {
 
 
 
-    public Location(){
+    public Location(String gpsProvider){
 
     }
 

@@ -22,7 +22,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -53,6 +55,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -62,6 +65,8 @@ import com.google.android.gms.maps.GoogleMap.OnInfoWindowCloseListener;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -70,6 +75,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -254,20 +260,18 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 mBuilder.setPositiveButton(R.string.ok_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
+
                         List<String> item = new ArrayList<>();
+
                         for (int i = 0; i < mUserItems.size(); i++) {
                             item.add(listItems[mUserItems.get(i)]);
                         }
-
 
                         Log.d("Stuff2", String.valueOf(markerMap.size()));
                         for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
                             entry.getKey().setVisible(listCheck(item, entry.getValue()));
 
                         }
-
-
-
                     }
                 });
 
@@ -330,23 +334,41 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setOnInfoWindowLongClickListener(this);
         mMap.setOnMyLocationButtonClickListener(this);
         mMap.setOnMyLocationClickListener(this);
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                Double min = Double.MAX_VALUE;
+                Marker minMarker = null;
+
+                for (Marker keys: markerMap.keySet()) {
+                    Double dist = distance2(latLng, keys.getPosition());
+
+                    if (dist < min){
+                        min = dist;
+                        minMarker = keys;
+                    }
+                }
+
+                for (Marker keys: markerMap.keySet()){
+                    keys.setVisible(false);
+                }
+
+                minMarker.setVisible(true);
+            }
+
+        });
         enableMyLocation();
 
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
 
-
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-
-
 
         for(Location val: obj.getAllLocs()){
             LatLng coord = new LatLng(val.getLongitude(), val.getLatitude());
             String dpmt = String.join(" ", val.getDepartment());
             String cat = String.join(" ", val.getCategory());
-
-
 
             bounds.include(coord);
             Marker tempMark = mMap.addMarker(new MarkerOptions()
@@ -357,8 +379,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
             markerMap.put(tempMark, val.getCategory());
-
-
         }
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
     }
@@ -415,7 +435,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         if (!checkReady()) {
             return;
         }
-        mMap.clear();
+        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
+            entry.getKey().setVisible(false);
+        }
     }
 
     /** Called when the Reset button is clicked. */
@@ -496,7 +518,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // This causes the marker at Adelaide to change color and alpha.
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
         marker.setAlpha(mRandom.nextFloat());
-
 */
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
@@ -604,25 +625,34 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 .newInstance(true).show(getSupportFragmentManager(), "dialog");
     }
 
-    private double distance(double lat1, double lon1, double lat2, double lon2) {
-        // haversine great circle distance approximation, returns meters
-        double theta = lon1 - lon2;
-        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2))
-                + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
-                * Math.cos(deg2rad(theta));
-        dist = Math.acos(dist);
-        dist = rad2deg(dist);
-        dist = dist * 60; // 60 nautical miles per degree of seperation
-        dist = dist * 1852; // 1852 meters per nautical mile
-        return (dist);
+    public static double distance2(LatLng point1, LatLng point2) {
+        double lat1= point1.latitude;
+        double lon1=point1.longitude;
+        double lat2=point2.latitude;
+        double lon2=point2.longitude;
+
+        lon1 = Math.toRadians(lon1);
+        lon2 = Math.toRadians(lon2);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        // Haversine formula
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        double a = Math.pow(Math.sin(dlat / 2), 2)
+                + Math.cos(lat1) * Math.cos(lat2)
+                * Math.pow(Math.sin(dlon / 2),2);
+
+        double c = 2 * Math.asin(Math.sqrt(a));
+
+        // Radius of earth in kilometers. Use 3956
+        // for miles
+        double r = 6371;
+
+        // calculate the result
+        return(c * r);
     }
 
-    private double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
-    }
 
-    private double rad2deg(double rad) {
-        return (rad * 180.0 / Math.PI);
-    }
 
 }

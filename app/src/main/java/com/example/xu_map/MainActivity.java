@@ -1,10 +1,13 @@
 package com.example.xu_map;
 
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         for (Map.Entry<String,Location> entry : obj.newObjects.entrySet()){
             gm.addVertex(entry.getValue());
         }
+        android.location.Location loc = new android.location.Location(LocationManager.GPS_PROVIDER);
+
 
         gm.addEdge(obj.getLocation("NCF Addition"), obj.getLocation("Music Building"), 5, true);
         gm.addEdge(obj.getLocation("NCF Addition"), obj.getLocation("College of Pharmacy"), 6, true);
@@ -64,25 +69,32 @@ public class MainActivity extends AppCompatActivity {
         spt.CalcShortestPath(locations1);
     }
 
-    private double distance(double lat1, double lon1, double lat2, double lon2) {
-        // haversine great circle distance approximation, returns meters
-        double theta = lon1 - lon2;
-        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2))
-                + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
-                * Math.cos(deg2rad(theta));
-        dist = Math.acos(dist);
-        dist = rad2deg(dist);
-        dist = dist * 60; // 60 nautical miles per degree of seperation
-        dist = dist * 1852; // 1852 meters per nautical mile
-        return (dist);
-    }
+    public static double distance2(LatLng point1, LatLng point2) {
+        double lat1= point1.latitude;
+        double lon1=point1.longitude;
+        double lat2=point2.latitude;
+        double lon2=point2.longitude;
 
-    private double deg2rad(double deg) {
-        return (deg * Math.PI / 180.0);
-    }
+        lon1 = Math.toRadians(lon1);
+        lon2 = Math.toRadians(lon2);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
 
-    private double rad2deg(double rad) {
-        return (rad * 180.0 / Math.PI);
+        // Haversine formula
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        double a = Math.pow(Math.sin(dlat / 2), 2)
+                + Math.cos(lat1) * Math.cos(lat2)
+                * Math.pow(Math.sin(dlon / 2),2);
+
+        double c = 2 * Math.asin(Math.sqrt(a));
+
+        // Radius of earth in kilometers. Use 3956
+        // for miles
+        double r = 6371;
+
+        // calculate the result
+        return(c * r);
     }
 
 }
