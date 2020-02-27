@@ -13,9 +13,9 @@ public class GraphMap {
 
     static class Edge {
         Location destination;
-        int weight;
+        Double weight;
 
-        public Edge(Location destination, int weight) {
+        public Edge(Location destination, Double weight) {
             this.destination = destination;
             this.weight = weight;
         }
@@ -33,7 +33,7 @@ public class GraphMap {
         }
     }
 
-    public void addEdge(Location source, Location destination, int weight, boolean bidirectional){
+    public void addEdge(Location source, Location destination, Double weight, boolean bidirectional){
 
         Edge edge = new Edge(destination, weight);
 

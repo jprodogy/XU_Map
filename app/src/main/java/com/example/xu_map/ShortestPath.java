@@ -15,7 +15,7 @@ public class ShortestPath {
 
     static class Node {
         Location loc;
-        int dist;
+        double dist;
         Boolean settled;
         Node parent;
 
@@ -34,7 +34,7 @@ public class ShortestPath {
     }
 
     public int MinDistance() {
-        int min = Integer.MAX_VALUE;
+        double min = Integer.MAX_VALUE;
         int min_loc = -1;
 
         for (int i = 0; i < distPath.size(); i++) {
@@ -127,7 +127,7 @@ public class ShortestPath {
 
     public List<Location> CalcShortestPath(Location src, Location dest){
         Dijkstra(src);
-        int min = Integer.MAX_VALUE;
+        double min = Integer.MAX_VALUE;
         int min_index = 0;
         for (int i = 0; i < distPath.size(); i++) {
             if (distPath.get(i).loc.equals(dest) && distPath.get(i).dist < min){
@@ -181,7 +181,7 @@ public class ShortestPath {
         }
         int pathCounter = 0;
         for (int i = 0; i < locList.size(); i++) {
-            int min = Integer.MAX_VALUE;
+            double min = Integer.MAX_VALUE;
 
             Dijkstra(locList.get(i));
 

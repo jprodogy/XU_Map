@@ -22,23 +22,14 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.Drawable;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.BounceInterpolator;
-import android.view.animation.Interpolator;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.SeekBar;
@@ -55,7 +46,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -65,8 +55,6 @@ import com.google.android.gms.maps.GoogleMap.OnInfoWindowCloseListener;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -74,14 +62,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * This shows how to place markers on a map.
@@ -95,6 +83,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         OnInfoWindowCloseListener,
         GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
+        TaskLoadedCallback,
         OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener {
 
 
@@ -151,7 +140,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             if (snippet != null && snippet.length() > 12) {
                 SpannableString snippetText = new SpannableString(snippet);
                 snippetText.setSpan(new ForegroundColorSpan(Color.MAGENTA), 0, 10, 0);
-                snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 12, snippet.length(), 0);
+                snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 0, snippet.length(), 0);
                 snippetUi.setText(snippetText);
             } else {
                 snippetUi.setText("");
@@ -162,7 +151,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private GoogleMap mMap;
 
     private Objects objList;
-    private Objects obj;
+
     private GraphMap graphMap;
     private Map< Marker, List<String>> markerMap;
 
@@ -174,12 +163,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     private final List<Marker> mMarkerRainbow = new ArrayList<Marker>();
 
-    private TextView mTopText;
-
-    private SeekBar mRotationBar;
-
-    private CheckBox mFlatBox;
-
     private RadioGroup mOptions;
 
     private final Random mRandom = new Random();
@@ -188,22 +171,23 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private String[] listItems;
     private boolean[] checkedItems;
     private ArrayList<Integer> mUserItems = new ArrayList<>();
+    private List<Polyline> mPolyList;
+    private List<Marker> MarkerPoints;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
+    private Polyline currentPolyline;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.marker_demo);
-
-
-        mRotationBar = (SeekBar) findViewById(R.id.rotationSeekBar);
-        mRotationBar.setMax(360);
-        mRotationBar.setOnSeekBarChangeListener(this);
-
-        mFlatBox = (CheckBox) findViewById(R.id.flat);
+        /*
+        Intent startServiceIntent = new Intent(MarkerDemoActivity.this, MyBackgroundService.class);
+        startService(startServiceIntent);
+        */
 
         mOptions = (RadioGroup) findViewById(R.id.custom_info_window_options);
         mOptions.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -225,11 +209,14 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         listItems = getResources().getStringArray(R.array.shopping_item);
         checkedItems = new boolean[listItems.length];
         objList = MainActivity.obj;
-        graphMap = MainActivity.gm;
-        markerMap = new HashMap<>();
 
-        obj = new Objects(this);
-        obj.CreateObjects();
+        graphMap = MainActivity.gm;
+
+        markerMap = new HashMap<>();
+        MarkerPoints =  new ArrayList<>();
+        mPolyList = new ArrayList<>();
+
+
 
 
 
@@ -364,8 +351,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setContentDescription("Map with lots of markers.");
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-
-        for(Location val: obj.getAllLocs()){
+        for(Location val: objList.getAllLocs()){
             LatLng coord = new LatLng(val.getLongitude(), val.getLatitude());
             String dpmt = String.join(" ", val.getDepartment());
             String cat = String.join(" ", val.getCategory());
@@ -385,25 +371,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     private void addMarkersToMap() {
 
-        // Creates a marker rainbow demonstrating how to create default marker icons of different
-        // hues (colors).
-        float rotation = mRotationBar.getProgress();
-        boolean flat = mFlatBox.isChecked();
-
-
-        int numMarkersInRainbow = 12;
-        for (int i = 0; i < numMarkersInRainbow; i++) {
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(new LatLng(
-                            -30 + 10 * Math.sin(i * Math.PI / (numMarkersInRainbow - 1)),
-                            135 - 10 * Math.cos(i * Math.PI / (numMarkersInRainbow - 1))))
-                    .title("Marker " + i)
-                    .icon(BitmapDescriptorFactory.defaultMarker(i * 360 / numMarkersInRainbow))
-                    .flat(flat)
-                    .rotation(rotation));
-            mMarkerRainbow.add(marker);
-
-        }
 
     }
 
@@ -438,6 +405,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
             entry.getKey().setVisible(false);
         }
+        for (Polyline poly: mPolyList){
+            poly.remove();
+        }
+        MarkerPoints.removeAll(MarkerPoints);
+
     }
 
     /** Called when the Reset button is clicked. */
@@ -449,17 +421,20 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             entry.getKey().setVisible(true);
         }
         addMarkersToMap ();
+
     }
+
+    public void onClearPath(View view) {
+        for (Polyline poly: mPolyList){
+            poly.remove();
+        }
+        MarkerPoints.removeAll(MarkerPoints);
+    }
+
 
     /** Called when the Reset button is clicked. */
     public void onToggleFlat(View view) {
-        if (!checkReady()) {
-            return;
-        }
-        boolean flat = mFlatBox.isChecked();
-        for (Marker marker : mMarkerRainbow) {
-            marker.setFlat(flat);
-        }
+
     }
 
     @Override
@@ -519,6 +494,20 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
         marker.setAlpha(mRandom.nextFloat());
 */
+
+        MarkerPoints.add(marker);
+        if (MarkerPoints.size() >= 2){
+            LatLng origin = MarkerPoints.get(MarkerPoints.size()-2).getPosition();
+            LatLng dest = MarkerPoints.get(MarkerPoints.size()-1).getPosition();
+
+            String url = getUrl(origin, dest, "driving");
+            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+            FetchUrl.execute(url,"driving");
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        }
+
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
         marker.setZIndex(zIndex);
@@ -533,6 +522,27 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
 
+    private String getUrl(LatLng origin, LatLng dest, String directionMode) {
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+        // Mode
+        String mode = "mode=" + directionMode;
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + mode;
+        // Output format
+        String output = "json";
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + getString(R.string.google_maps_key);
+        return url;
+    }
+
+    @Override
+    public void onTaskDone(Object... values) {
+        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+        mPolyList.add(currentPolyline);
+    }
 
 
     @Override
@@ -552,17 +562,14 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public void onMarkerDragStart(Marker marker) {
-        mTopText.setText("onMarkerDragStart");
     }
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
-        mTopText.setText("onMarkerDragEnd");
     }
 
     @Override
     public void onMarkerDrag(Marker marker) {
-        mTopText.setText("onMarkerDrag.  Current Position: " + marker.getPosition());
     }
 
     private void enableMyLocation() {
