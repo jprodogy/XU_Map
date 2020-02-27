@@ -434,7 +434,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     /** Called when the Reset button is clicked. */
     public void onToggleFlat(View view) {
-        Log.d("Thing", "onToggleFlat: ");
     }
 
     @Override
