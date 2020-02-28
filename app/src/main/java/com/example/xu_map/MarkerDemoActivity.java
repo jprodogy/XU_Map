@@ -254,7 +254,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                             item.add(listItems[mUserItems.get(i)]);
                         }
 
-                        Log.d("Stuff2", String.valueOf(markerMap.size()));
                         for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
                             entry.getKey().setVisible(listCheck(item, entry.getValue()));
 
@@ -346,6 +345,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         });
         enableMyLocation();
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void addMarkersToMap() {
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
@@ -367,10 +370,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             markerMap.put(tempMark, val.getCategory());
         }
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
-    }
-
-    private void addMarkersToMap() {
-
 
     }
 
@@ -413,6 +412,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     /** Called when the Reset button is clicked. */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onResetMap(View view) {
         if (!checkReady()) {
             return;
@@ -432,9 +432,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
 
-    /** Called when the Reset button is clicked. */
-    public void onToggleFlat(View view) {
-    }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -464,38 +461,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public boolean onMarkerClick(final Marker marker) {
 
-/*
-        // This causes the marker at Perth to bounce into position when it is clicked.
-        final Handler handler = new Handler();
-        final long start = SystemClock.uptimeMillis();
-        final long duration = 1500;
-
-        final Interpolator interpolator = new BounceInterpolator();
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = Math.max(
-                        1 - interpolator.getInterpolation((float) elapsed / duration), 0);
-                marker.setAnchor(0.5f, 1.0f + 2 * t);
-
-                if (t > 0.0) {
-                    // Post again 16ms later.
-                    handler.postDelayed(this, 16);
-                }
-            }
-        });
-
- */
-    /*
-        // This causes the marker at Adelaide to change color and alpha.
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(mRandom.nextFloat() * 360));
-        marker.setAlpha(mRandom.nextFloat());
-*/
 
         MarkerPoints.add(marker);
-        if (MarkerPoints.size() >= 2){
+        if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
+                MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
             LatLng origin = MarkerPoints.get(MarkerPoints.size()-2).getPosition();
             LatLng dest = MarkerPoints.get(MarkerPoints.size()-1).getPosition();
 
