@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * This shows how to place markers on a map.
@@ -348,7 +349,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void addMarkersToMap() {
+    public void addMarkersToMap() {
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
@@ -356,8 +357,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for(Location val: objList.getAllLocs()){
             LatLng coord = new LatLng(val.getLongitude(), val.getLatitude());
-            String dpmt = String.join(" ", val.getDepartment());
-            String cat = String.join(" ", val.getCategory());
+
+            String dpmt = val.getDepartment().stream()
+                    .collect(Collectors.joining(" "));
+            String cat = val.getCategory().stream()
+                    .collect(Collectors.joining(" "));
 
             bounds.include(coord);
             Marker tempMark = mMap.addMarker(new MarkerOptions()
@@ -592,9 +596,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Displays a dialog with error message explaining that the location permission is missing.
-     */
+
     private void showMissingPermissionError() {
         PermissionUtils.PermissionDeniedDialog
                 .newInstance(true).show(getSupportFragmentManager(), "dialog");
