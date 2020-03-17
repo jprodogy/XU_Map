@@ -28,6 +28,9 @@ import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
@@ -41,11 +44,18 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -64,6 +74,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,6 +99,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationClickListener,
         TaskLoadedCallback,
         OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener {
+
 
 
 
@@ -178,6 +192,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
     private Polyline currentPolyline;
+    private DrawerLayout dl;
+    private ActionBarDrawerToggle t;
+    private NavigationView nv;
+
+
 
 
 
@@ -185,12 +204,15 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.marker_demo);
+
         /*
         Intent startServiceIntent = new Intent(MarkerDemoActivity.this, MyBackgroundService.class);
         startService(startServiceIntent);
         */
 
+
         mOptions = (RadioGroup) findViewById(R.id.custom_info_window_options);
+
         mOptions.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -206,7 +228,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         new OnMapAndViewReadyListener(mapFragment, this);
 
 
-        mOrder = (Button) findViewById(R.id.btnOrder);
+       // mOrder = (Button) findViewById(R.id.btnOrder);
         listItems = getResources().getStringArray(R.array.shopping_item);
         checkedItems = new boolean[listItems.length];
         objList = MainActivity.obj;
@@ -217,11 +239,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         MarkerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
 
-
-
-
-
-        CreateDropdownMenu();
+      //  CreateDropdownMenu();
 
 
 
@@ -320,6 +338,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setOnInfoWindowCloseListener(this);
         mMap.setOnInfoWindowLongClickListener(this);
         mMap.setOnMyLocationButtonClickListener(this);
+
         mMap.setOnMyLocationClickListener(this);
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -344,6 +363,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             }
 
         });
+
         enableMyLocation();
 
     }
@@ -411,6 +431,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Polyline poly: mPolyList){
             poly.remove();
         }
+
+        for (Marker mp: MarkerPoints){
+            mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+        }
         MarkerPoints.removeAll(MarkerPoints);
 
     }
@@ -432,7 +456,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Polyline poly: mPolyList){
             poly.remove();
         }
+        for (Marker mp: MarkerPoints){
+            mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+        }
         MarkerPoints.removeAll(MarkerPoints);
+
     }
 
 
@@ -458,6 +486,8 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // Do nothing.
     }
 
+
+
     //
     // Marker related listeners.
     //
@@ -465,20 +495,23 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public boolean onMarkerClick(final Marker marker) {
 
-
         MarkerPoints.add(marker);
         if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
                 MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
-            LatLng origin = MarkerPoints.get(MarkerPoints.size()-2).getPosition();
-            LatLng dest = MarkerPoints.get(MarkerPoints.size()-1).getPosition();
+            Marker origin = MarkerPoints.get(MarkerPoints.size()-2);
+            Marker dest = MarkerPoints.get(MarkerPoints.size()-1);
 
-            String url = getUrl(origin, dest, "driving");
+            origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+            String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
             FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
             FetchUrl.execute(url,"driving");
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(origin.getPosition()));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
         }
+
 
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
@@ -492,6 +525,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // marker is centered and for the marker's info window to open, if it has one).
         return false;
     }
+
+
+
+
 
 
     private String getUrl(LatLng origin, LatLng dest, String directionMode) {
@@ -543,6 +580,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public void onMarkerDrag(Marker marker) {
     }
+
 
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -603,10 +641,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     public static double distance2(LatLng point1, LatLng point2) {
-        double lat1= point1.latitude;
-        double lon1=point1.longitude;
-        double lat2=point2.latitude;
-        double lon2=point2.longitude;
+        double lat1 = point1.latitude;
+        double lon1 = point1.longitude;
+        double lat2 = point2.latitude;
+        double lon2 = point2.longitude;
 
         lon1 = Math.toRadians(lon1);
         lon2 = Math.toRadians(lon2);
@@ -618,7 +656,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         double dlat = lat2 - lat1;
         double a = Math.pow(Math.sin(dlat / 2), 2)
                 + Math.cos(lat1) * Math.cos(lat2)
-                * Math.pow(Math.sin(dlon / 2),2);
+                * Math.pow(Math.sin(dlon / 2), 2);
 
         double c = 2 * Math.asin(Math.sqrt(a));
 
@@ -627,9 +665,42 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         double r = 6371;
 
         // calculate the result
-        return(c * r);
+        return (c * r);
     }
 
+
+    public void CreateNavDrawer(){
+        dl = (DrawerLayout)findViewById(R.id.activity_main);
+        t = new ActionBarDrawerToggle(this, dl,R.string.Open, R.string.Close);
+
+        dl.addDrawerListener(t);
+        t.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        nv = (NavigationView)findViewById(R.id.nv);
+        nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch(id)
+                {
+                    case R.id.account:
+                        Toast.makeText(MarkerDemoActivity.this, "My Account",Toast.LENGTH_SHORT).show();break;
+                    case R.id.settings:
+                        Toast.makeText(MarkerDemoActivity.this, "Settings",Toast.LENGTH_SHORT).show();break;
+                    case R.id.mycart:
+                        Toast.makeText(MarkerDemoActivity.this, "My Cart",Toast.LENGTH_SHORT).show();break;
+                    default:
+                        return true;
+                }
+
+
+                return true;
+
+            }
+        });
+    }
 
 
 }
