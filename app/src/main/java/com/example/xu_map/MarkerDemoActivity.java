@@ -30,11 +30,9 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -44,18 +42,11 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -74,9 +65,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
+
+import org.apache.commons.text.WordUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,7 +88,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
         TaskLoadedCallback,
-        OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener {
+        OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener, SearchView.OnQueryTextListener {
 
 
 
@@ -111,7 +101,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         private final View mWindow;
 
         private final View mContents;
-
         CustomInfoWindowAdapter() {
             mWindow = getLayoutInflater().inflate(R.layout.custom_info_window, null);
             mContents = getLayoutInflater().inflate(R.layout.custom_info_contents, null);
@@ -119,23 +108,22 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         @Override
         public View getInfoWindow(Marker marker) {
-            if (mOptions.getCheckedRadioButtonId() != R.id.custom_info_window) {
-                // This means that getInfoContents will be called.
-                return null;
-            }
+            /*
             render(marker, mWindow);
             return mWindow;
+             */
+            return null;
         }
+
 
         @Override
         public View getInfoContents(Marker marker) {
-            if (mOptions.getCheckedRadioButtonId() != R.id.custom_info_contents) {
-                // This means that the default info contents will be used.
-                return null;
-            }
             render(marker, mContents);
+
             return mContents;
         }
+
+
 
         private void render(Marker marker, View view) {
 
@@ -162,39 +150,26 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             }
         }
     }
-
+    private static final String TAG = "MarkerDemoActivity";
     private GoogleMap mMap;
-
     private Objects objList;
-
     private GraphMap graphMap;
     private Map< Marker, List<String>> markerMap;
-
-    /**
-     * Keeps track of the last selected marker (though it may no longer be selected).  This is
-     * useful for refreshing the info window.
-     */
+    private Map<Location, Marker> markerMap2;
     private Marker mLastSelectedMarker;
-
     private final List<Marker> mMarkerRainbow = new ArrayList<Marker>();
-
-    private RadioGroup mOptions;
-
     private final Random mRandom = new Random();
-
-    private Button mOrder;
+    private Button catSelectBut;
     private String[] listItems;
     private boolean[] checkedItems;
     private ArrayList<Integer> mUserItems = new ArrayList<>();
     private List<Polyline> mPolyList;
     private List<Marker> MarkerPoints;
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
     private Polyline currentPolyline;
-    private DrawerLayout dl;
-    private ActionBarDrawerToggle t;
-    private NavigationView nv;
+    private SearchView searhBar;
+
 
 
 
@@ -211,100 +186,84 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         */
 
 
-        mOptions = (RadioGroup) findViewById(R.id.custom_info_window_options);
-
-        mOptions.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (mLastSelectedMarker != null && mLastSelectedMarker.isInfoWindowShown()) {
-                    // Refresh the info window when the info window's content has changed.
-                    mLastSelectedMarker.showInfoWindow();
-                }
-            }
-        });
-
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         new OnMapAndViewReadyListener(mapFragment, this);
 
-
-       // mOrder = (Button) findViewById(R.id.btnOrder);
+        catSelectBut = findViewById(R.id.action_select_category);
         listItems = getResources().getStringArray(R.array.shopping_item);
         checkedItems = new boolean[listItems.length];
         objList = MainActivity.obj;
-
         graphMap = MainActivity.gm;
-
         markerMap = new HashMap<>();
+        markerMap2 = new HashMap<>();
         MarkerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
 
-      //  CreateDropdownMenu();
-
-
+        searhBar = findViewById(R.id.search_bar);
+        searhBar.setOnQueryTextListener(this);
+        for (Location loc: objList.getAllLocs()){
+            Log.d(TAG, loc.getBuildName() + " " + loc.getKeywords().toString());
+        }
 
     }
 
     public void CreateDropdownMenu(){
-        mOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder mBuilder = new AlertDialog.Builder(MarkerDemoActivity.this);
-                mBuilder.setTitle(R.string.dialog_title);
-                mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
-                        if(isChecked){
-                            mUserItems.add(position);
-                        }else{
-                            mUserItems.remove((Integer.valueOf(position)));
-                        }
+
+            AlertDialog.Builder mBuilder = new AlertDialog.Builder(MarkerDemoActivity.this);
+            mBuilder.setTitle(R.string.dialog_title);
+            mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+                    if(isChecked){
+                        mUserItems.add(position);
+                    }else{
+                        mUserItems.remove((Integer.valueOf(position)));
                     }
-                });
+                }
+            });
 
-                mBuilder.setCancelable(false);
-                mBuilder.setPositiveButton(R.string.ok_label, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
+            mBuilder.setCancelable(false);
+            mBuilder.setPositiveButton(R.string.ok_label, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
 
-                        List<String> item = new ArrayList<>();
+                    List<String> item = new ArrayList<>();
 
-                        for (int i = 0; i < mUserItems.size(); i++) {
-                            item.add(listItems[mUserItems.get(i)]);
-                        }
-
-                        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
-                            entry.getKey().setVisible(listCheck(item, entry.getValue()));
-
-                        }
+                    for (int i = 0; i < mUserItems.size(); i++) {
+                        item.add(listItems[mUserItems.get(i)]);
                     }
-                });
 
-                mBuilder.setNegativeButton(R.string.dismiss_label, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
+                    for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
+                        entry.getKey().setVisible(listCheck(item, entry.getValue()));
+
                     }
-                });
+                }
+            });
 
-                mBuilder.setNeutralButton(R.string.clear_all_label, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        for (int i = 0; i < checkedItems.length; i++) {
-                            checkedItems[i] = false;
-                            mUserItems.clear();
-                        }
+            mBuilder.setNegativeButton(R.string.dismiss_label, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
 
-                        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
-                            entry.getKey().setVisible(true);
-                        }
+            mBuilder.setNeutralButton(R.string.clear_all_label, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    for (int i = 0; i < checkedItems.length; i++) {
+                        checkedItems[i] = false;
+                        mUserItems.clear();
                     }
-                });
 
-                AlertDialog mDialog = mBuilder.create();
-                mDialog.show();
-            }
-        });
+                    for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
+                        entry.getKey().setVisible(true);
+                    }
+                }
+            });
+
+            AlertDialog mDialog = mBuilder.create();
+            mDialog.show();
     }
 
     public Boolean listCheck(List<String> list1, List<String> list2){
@@ -375,23 +334,23 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setContentDescription("Map with lots of markers.");
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-        for(Location val: objList.getAllLocs()){
-            LatLng coord = new LatLng(val.getLongitude(), val.getLatitude());
+        for(Location loc: objList.getAllLocs()){
+            LatLng coord = new LatLng(loc.getLongitude(), loc.getLatitude());
 
-            String dpmt = val.getDepartment().stream()
-                    .collect(Collectors.joining(" "));
-            String cat = val.getCategory().stream()
+            String pur = loc.getPurpose().stream()
                     .collect(Collectors.joining(" "));
 
             bounds.include(coord);
+
+
             Marker tempMark = mMap.addMarker(new MarkerOptions()
                     .position(coord)
-                    .title(val.getBuildName())
-                    .snippet("Building #"+ val.getBuildNum() + "\n" + "Department: " + dpmt +"\n" + "Category: "  + cat)
-
+                    .title(WordUtils.capitalize(loc.getBuildName()))
+                    .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-            markerMap.put(tempMark, val.getCategory());
+            markerMap.put(tempMark, loc.getPurpose());
+            markerMap2.put(loc, tempMark);
         }
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
 
@@ -421,7 +380,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     /** Called when the Clear button is clicked. */
-    public void onClearMap(View view) {
+    public void onClearMap() {
         if (!checkReady()) {
             return;
         }
@@ -441,18 +400,18 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     /** Called when the Reset button is clicked. */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void onResetMap(View view) {
+    public void onResetMap() {
         if (!checkReady()) {
             return;
         }
         for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
             entry.getKey().setVisible(true);
         }
-        addMarkersToMap ();
+        addMarkersToMap();
 
     }
 
-    public void onClearPath(View view) {
+    public void onClearPath() {
         for (Polyline poly: mPolyList){
             poly.remove();
         }
@@ -669,38 +628,104 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
 
-    public void CreateNavDrawer(){
-        dl = (DrawerLayout)findViewById(R.id.activity_main);
-        t = new ActionBarDrawerToggle(this, dl,R.string.Open, R.string.Close);
-
-        dl.addDrawerListener(t);
-        t.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        nv = (NavigationView)findViewById(R.id.nv);
-        nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch(id)
-                {
-                    case R.id.account:
-                        Toast.makeText(MarkerDemoActivity.this, "My Account",Toast.LENGTH_SHORT).show();break;
-                    case R.id.settings:
-                        Toast.makeText(MarkerDemoActivity.this, "Settings",Toast.LENGTH_SHORT).show();break;
-                    case R.id.mycart:
-                        Toast.makeText(MarkerDemoActivity.this, "My Cart",Toast.LENGTH_SHORT).show();break;
-                    default:
-                        return true;
-                }
-
-
-                return true;
-
-            }
-        });
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_select_category:
+                CreateDropdownMenu();
+                return true;
+            case R.id.action_clear:
+                onClearMap();
+                return true;
+            case R.id.action_reset:
+                onResetMap();
+                return true;
+            case R.id.action_remove_path:
+                onClearPath();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        onClearPath();
+        SearchLocRoute slr = new SearchLocRoute();
+        s = s.toLowerCase();
+        MarkerPoints = MarkerSearch(s.split(","));
+        for (int i = 0; i < MarkerPoints.size(); i++) {
+            Log.d(TAG, MarkerPoints.get(i).getTitle());
+        }
+
+
+
+        if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
+                MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
+            Marker origin = MarkerPoints.get(MarkerPoints.size()-2);
+            Marker dest = MarkerPoints.get(MarkerPoints.size()-1);
+
+            origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+            String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
+            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+            FetchUrl.execute(url,"driving");
+
+        }
+
+
+
+        return false;
+    }
+
+
+
+    public ArrayList<Marker> MarkerSearch(String[] keywords){
+        onClearPath();
+        ArrayList<Marker> foundMarkers = new ArrayList<>();
+        for(String key: keywords){
+            key = key.trim();
+
+            Log.d(TAG, key);
+            try{
+                int val = Integer.valueOf(key);
+                Location loc = null;
+                if((loc = objList.getLocViaNum(val)) != null){
+                    foundMarkers.add(markerMap2.get(loc));
+                }
+            }catch (Exception e) {
+                Location loc = null;
+                ArrayList<Location> locs = null;
+                if((loc = objList.getLocation(key)) != null){
+                    foundMarkers.add(markerMap2.get(loc));
+
+                }else if((locs = objList.getAllViaKey(key)) != null){
+                    for (Location val: locs){
+                        foundMarkers.add(markerMap2.get(val));
+                    }
+                }
+            }
+        }
+        return foundMarkers;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        return false;
+    }
+
+
 
 
 }

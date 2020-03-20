@@ -1,13 +1,5 @@
 package com.example.xu_map;
 
-import android.content.Context;
-import android.util.Log;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +10,8 @@ public class Location {
     private List<String> street;
     private double longitude;
     private double latitude;
-    private List<String> category;
-    private List<String> department;
+    private List<String> purpose;
+    private List<String> keyWords;
 
 
 
@@ -29,8 +21,8 @@ public class Location {
 
     public Location(String buildName, int buildNum, String[] street, double longitude, double latitude, String[] category, String[] department){
         this.street = new ArrayList();
-        this.category = new ArrayList<>();
-        this.department = new ArrayList<>();
+        this.purpose = new ArrayList<>();
+        this.keyWords = new ArrayList<>();
 
         this.buildName = buildName;
         this.buildNum = buildNum;
@@ -38,14 +30,8 @@ public class Location {
         this.latitude = latitude;
 
         addStreet(street);
-        addCategory(category);
-        addDprt(department);
-
-        String stuff = "";
-        for (int i = 0; i < this.category.size(); i++) {
-            stuff+= this.category.get(i) + " ";
-        }
-        Log.d("Category", stuff);
+        addPurpose(category);
+        addKeywords(department);
 
     }
 
@@ -69,12 +55,12 @@ public class Location {
         return latitude;
     }
 
-    public List<String> getCategory() {
-        return category;
+    public List<String> getPurpose() {
+        return purpose;
     }
 
-    public List<String> getDepartment() {
-        return department;
+    public List<String> getKeywords() {
+        return keyWords;
     }
 
     public void setBuildNum(int buildNum) {
@@ -99,17 +85,17 @@ public class Location {
         }
     }
 
-    public void addCategory(String[] str){
+    public void addPurpose(String[] str){
 
         for (int i = 0; i < str.length; i++) {
 
-            category.add(str[i]);
+            purpose.add(str[i]);
         }
     }
 
-    public void addDprt(String[] str){
+    public void addKeywords(String[] str){
         for (int i = 0; i < str.length; i++) {
-            department.add(str[i]);
+            keyWords.add(str[i]);
         }
     }
 

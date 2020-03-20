@@ -1,20 +1,15 @@
 package com.example.xu_map;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Objects {
     Map<String, Location> newObjects;
@@ -92,21 +87,21 @@ public class Objects {
 
     }
 
-    public ArrayList<Location> getAllViaCat(String cat){
+    public ArrayList<Location> getAllViaPur(String cat){
         ArrayList<Location> locs = new ArrayList<>();
         for (Map.Entry<String,Location> entry : newObjects.entrySet()){
-            if (entry.getValue().getCategory().contains(cat)){
+            if (entry.getValue().getPurpose().contains(cat)){
                 locs.add(entry.getValue());
             }
         }
         return locs;
     }
 
-    public ArrayList<Location> getAllViaDept(String dept){
+    public ArrayList<Location> getAllViaKey(String key){
         ArrayList<Location> locs = new ArrayList<>();
         for (Map.Entry<String,Location> entry : newObjects.entrySet()){
 
-            if (entry.getValue().getDepartment().contains(dept)){
+            if (entry.getValue().getKeywords().contains(key)){
                 locs.add(entry.getValue());
             }
         }

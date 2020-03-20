@@ -1,40 +1,40 @@
-NCF Addition,37,Short St./Drexel Dr.,29.965277,-90.107989,Academic,ITC Dept/STEM/STEM Offices/Science Labs
-NCF Science Annex,36,Drexel Dr.,29.965293,-90.108450,Academic,STEM Academic Offices/Labs/STEM
-Library Resource Center,38,Howard Ave.,29.965750,-90.107178,Academic/Adminstrative/Recreation/Landmark,NA
-Administration Building,1,Drexel Dr.,29.964179,-90.107268,Administrative/Faith/Recreation,STEM/Theology
-St. Katharine Drexel Chapel,8,Pine St./Howard Ave.,29.965220,-90.106072,Faith,Theology
-Campus Police,89,Palmetto St./S Carrollton Ave.,29.965693,-90.109245,Administrative/Operations,Police Dept.
-Building Services D,89,Palmetto St./S Carrollton Ave/Short St.,29.965550,-90.109148,Administrative/Operations,NA
-Music Building,10,Drexel Dr.,29.964705,-90.107895,Academic/Recreation,Music
-Administrative Annex,2,Pine St./Drexel Dr.,29.964161,-90.106713,Adminstrative,Campus Ministry/Theology
-Convent,3,Pine St./Dixon St.,29.964374,-90.106491,Faith,Theology
-College of Pharmacy,5,Howard Ave./Pine St.,29.965085,-90.106841,Academic,Pharmacy
-Qatar Pharmacy Pavilion,33,Howard Ave./Pine St.,29.965625,-90.106739,Academic/Administrative,Pharmacy
-Pharmacy Addition,6,Howard Ave./Pine St.,29.965358,-90.107201,Administrative,Pharmacy
-St. Joseph Health Center,13,Drexel Dr./Pine St.,29.963544,-90.106426,Academic/Administrative/Operations,SASO/Student Health/Career Services
-STEM Building,85,Drexel Dr./S Telemachus St.,29.962469,-90.105438,Academic,STEM
-Art Building Building A,51,Pine St./Palm St.,29.962831,-90.108079,Academic,Art
-Art Building Building C,43,Pine St./Edinburgh St.,29.962468,-90.108570,Academic,Art
-Art Building Building D,39,Edinburgh St./Lowerline St.,29.962690,-90.108789,Academic,Art
-Xavier Community Outreach Center,65,Short St./Edinburgh St.,29.962842,-90.111206,Academic/Landmark,NA
-Convocation Annex,62,Fern St./Lowerline/Fern St./Stroelitz,29.963889,-90.108539,Academic/Administrative/Recreation,Athletics
-Convocation Academic Center,61,Stroelitz St./Short St./Palm St./Lowerline St.,29.963847, -90.109733,Academic/Recreation,Athletics
-Xavier South,40,S Clark St./S Jefferson Davis Pkwy/Dixon St./Drexel Drive,29.961542,-90.102152,Academic/Administrative/Recreation,Business/Social Sciences
-Living and Learning Center,88,Dixon St./Howard Ave./S Clark St./S Jefferson Davis Pkwy,29.962500,-90.102103,ResidentialHall,NA
-St. Martin dePorres Residence Hall,44,Drexel Dr./S Clark St.,29.961165,-90.103096,ResidentialHall,NA
-Katharine Drexel Residence Hall,14,Pine St./Dixon St./Broadway St.,29.963886,-90.106172,ResidentialHall,NA
-St. Michaels Residence Hall,21,Pine St./Howard Ave,29.964763,-90.105660,ResidentialHall,NA
-St. Peter Claver Residence Hall,47,Drexel Dr.,29.962432,-90.105723,ResidentialHall,NA
-Student Fitness Center,42,Drexel Dr./S Clark st./Dixon St.,29.961370,-90.102721,Recreation,PE/Athletics
-Tennis Center,63,Pine St./Palm St./Broadway St./Stroelitz St.,29.962319,-90.107888,Recreation,PE/Athletics
-Cafe Noir,38,Fern St./Washington/Lowerline St./Stroelitz St.,29.965551, -90.107222,Recreation,NA
-University Center,17,Broadway St./Drexel Dr./Dixon St.,29.963263,-90.105653,Recreation,NA,
-Shipping And Receiving,45,Palmetto St./S Carrollton Ave/Short St.,29.965436,-90.108916,Operations,NA
-Central Power Plant,18,Dixon St./S Cortez St./Broadway St.,29.964062,-90.105512,Operations,NA
-Crescent Plywood,70,S Clark St./Calliope St.,29.960200,-90.104466,Operations,NA
-Building Services A,71,Euphrosine St./S Clark St./S Jefferson Davis Pwky,29.960165,-90.103459,Operations,NA
-Building Services B,72,Calliope St./S Jefferson Davis Pwky/S Clark St.,29.959813,-90.103609,Operations,NA
-Building Service C,73,Calliope St./S Clark St./S Jefferson Davis Pwky,29.959641,-90.103724,Operations,NA
-Pedestrian Bridge,64,Drexel Dr.,29.964523,-90.108374,Landmark,NA
-Pedestrian Art Mall,9, Short St.,29.965312,-90.107445,Landmark,NA
-Xavier Archway/Main Entrance,11,Drexel Dr./Pine St.,29.963664,-90.106914,Landmark,NA
+ncf science addition,37,Short St./Drexel Dr.,29.965277,-90.107989,academic,ncf/science/science addition
+ncf science annex,36,Drexel Dr.,29.965293,-90.108450,Academic,ncf/science/science annex
+library resource center,38,Howard Ave.,29.965750,-90.107178,Academic/Adminstrative/recreation/landmark,library
+administration building,1,Drexel Dr.,29.964179,-90.107268,Administrative/Faith/Recreation,stem/theology, admin/administration
+st. katharine drexel chapel,8,Pine St./Howard Ave.,29.965220,-90.106072,Faith,chapel/church
+campus police,89,Palmetto St./S Carrollton Ave.,29.965693,-90.109245,Administrative/Operations,police/police department/police dep.
+building services d,89,Palmetto St./S Carrollton Ave/Short St.,29.965550,-90.109148,Administrative/Operations,building services
+music building,10,Drexel Dr.,29.964705,-90.107895,Academic/Recreation,music
+administrative annex,2,Pine St./Drexel Dr.,29.964161,-90.106713,Adminstrative,admin/administration/admin annex
+convent,3,Pine St./Dixon St.,29.964374,-90.106491,Faith,Theology/convent
+college of pharmacy,5,Howard Ave./Pine St.,29.965085,-90.106841,Academic,Pharmacy
+qatar pharmacy pavilion,33,Howard Ave./Pine St.,29.965625,-90.106739,Academic/Administrative,pharmacy/pavilion/pharmacy pavilion
+pharmacy addition,6,Howard Ave./Pine St.,29.965358,-90.107201,Administrative,pharmacy
+st. joseph health center,13,Drexel Dr./Pine St.,29.963544,-90.106426,Academic/Administrative/Operations,saso/student health/career services/st. joes
+stem building,85,Drexel Dr./S Telemachus St.,29.962469,-90.105438,Academic,stem
+art building a,51,Pine St./Palm St.,29.962831,-90.108079,Academic,art/art a
+art building c,43,Pine St./Edinburgh St.,29.962468,-90.108570,Academic,art/art b
+art building d,39,Edinburgh St./Lowerline St.,29.962690,-90.108789,Academic,art/art c
+xavier community outreach center,65,Short St./Edinburgh St.,29.962842,-90.111206,Academic/Landmark,community outreach/community outreach center
+convocation annex,62,Fern St./Lowerline/Fern St./Stroelitz,29.963889,-90.108539,Academic/Administrative/Recreation,athletics/convocation
+convocation academic center,61,Stroelitz St./Short St./Palm St./Lowerline St.,29.963847, -90.109733,Academic/Recreation,athletics/convocation
+xavier south,40,S Clark St./S Jefferson Davis Pkwy/Dixon St./Drexel Drive,29.961542,-90.102152,Academic/Administrative/Recreation,business/social sciences
+living and learning center,88,Dixon St./Howard Ave./S Clark St./S Jefferson Davis Pkwy,29.962500,-90.102103,ResidentialHall,living/living and learning
+st. martin deporres residence hall,44,Drexel Dr./S Clark St.,29.961165,-90.103096,ResidentialHall,st. martin deporres/st. martin/deporres/dp
+katharine drexel residence hall,14,Pine St./Dixon St./Broadway St.,29.963886,-90.106172,ResidentialHall,katharine drexel/katharine/kd
+st. michaels residence hall,21,Pine St./Howard Ave,29.964763,-90.105660,ResidentialHall,st. michaels/st. michs
+st. peter claver residence hall,47,Drexel Dr.,29.962432,-90.105723,ResidentialHall,st. peter/claver
+student fitness center,42,Drexel Dr./S Clark st./Dixon St.,29.961370,-90.102721,Recreation,pe/student fitness/
+tennis center,63,Pine St./Palm St./Broadway St./Stroelitz St.,29.962319,-90.107888,Recreation,tennis court/tennis
+cafe noir,38,Fern St./Washington/Lowerline St./Stroelitz St.,29.965551, -90.107222,Recreation,cafe/noir
+university center,17,Broadway St./Drexel Dr./Dixon St.,29.963263,-90.105653,Recreation,uc
+shipping and receiving,45,Palmetto St./S Carrollton Ave/Short St.,29.965436,-90.108916,Operations,shipping
+central power plant,18,Dixon St./S Cortez St./Broadway St.,29.964062,-90.105512,Operations,power plant
+crescent plywood,70,S Clark St./Calliope St.,29.960200,-90.104466,Operations,crescent/plywood
+building services a,71,Euphrosine St./S Clark St./S Jefferson Davis Pwky,29.960165,-90.103459,Operations,building services
+building services b,72,Calliope St./S Jefferson Davis Pwky/S Clark St.,29.959813,-90.103609,Operations,building services
+building service c,73,Calliope St./S Clark St./S Jefferson Davis Pwky,29.959641,-90.103724,Operations,building services
+pedestrian bridge,64,Drexel Dr.,29.964523,-90.108374,Landmark,bridge
+pedestrian art mall,9, Short St.,29.965312,-90.107445,Landmark,art hall
+xavier archway/main entrance,11,Drexel Dr./Pine St.,29.963664,-90.106914,Landmark,xavier archway/archway
