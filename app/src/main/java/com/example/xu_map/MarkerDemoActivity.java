@@ -65,6 +65,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.ui.IconGenerator;
 
 import org.apache.commons.text.WordUtils;
 
@@ -342,12 +343,19 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
             bounds.include(coord);
 
+            IconGenerator mIconGenerator = new IconGenerator(this);
+            mIconGenerator.setStyle(IconGenerator.STYLE_GREEN);
+            mIconGenerator.setContentRotation(90);
+            Bitmap iconBitmap = mIconGenerator.makeIcon(WordUtils.capitalize(loc.getBuildName()));
+
 
             Marker tempMark = mMap.addMarker(new MarkerOptions()
+                   // .icon(BitmapDescriptorFactory.fromBitmap(bmp))
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
                     .position(coord)
                     .title(WordUtils.capitalize(loc.getBuildName()))
-                    .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                    .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur));
+                    //.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
 
             markerMap.put(tempMark, loc.getPurpose());
             markerMap2.put(loc, tempMark);
@@ -408,7 +416,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             entry.getKey().setVisible(true);
         }
         addMarkersToMap();
-
+        onClearPath();
     }
 
     public void onClearPath() {
@@ -419,7 +427,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
         MarkerPoints.removeAll(MarkerPoints);
-
     }
 
 
@@ -453,8 +460,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-
-        MarkerPoints.add(marker);
+        if(!MarkerPoints.contains(marker)){
+            MarkerPoints.add(marker);
+        }
         if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
                 MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
             Marker origin = MarkerPoints.get(MarkerPoints.size()-2);
@@ -661,31 +669,36 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public boolean onQueryTextSubmit(String s) {
         onClearPath();
-        SearchLocRoute slr = new SearchLocRoute();
         s = s.toLowerCase();
         MarkerPoints = MarkerSearch(s.split(","));
         for (int i = 0; i < MarkerPoints.size(); i++) {
             Log.d(TAG, MarkerPoints.get(i).getTitle());
         }
 
+        if(!s.contains(",")){
+            if(MarkerPoints.size() == 1){
 
+            }else{
+                for(Marker mp: MarkerPoints){
 
-        if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
-                MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
-            Marker origin = MarkerPoints.get(MarkerPoints.size()-2);
-            Marker dest = MarkerPoints.get(MarkerPoints.size()-1);
+                }
+            }
+        }else {
 
-            origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-            dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            if (MarkerPoints.size() >= 2) {
+                for (int i = 1; i < MarkerPoints.size(); i++) {
+                    Marker origin = MarkerPoints.get(i - 1);
+                    Marker dest = MarkerPoints.get(i);
 
-            String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
-            FetchUrl.execute(url,"driving");
+                    origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                    dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
+                    String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
+                    FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+                    FetchUrl.execute(url, "driving");
+                }
+            }
         }
-
-
-
         return false;
     }
 

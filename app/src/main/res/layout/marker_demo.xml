@@ -24,7 +24,8 @@
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"
         android:queryHint="Search Buildings and Routes"
-        android:clickable="true"/>
+        android:clickable="true"
+        android:focusedByDefault="false"/>
 
     <FrameLayout
         android:id="@+id/frameMap"
