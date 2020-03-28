@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by Vishal on 10/20/2018.
@@ -18,9 +19,12 @@ import java.net.URL;
 public class FetchURL extends AsyncTask<String, Void, String> {
     Context mContext;
     String directionMode = "driving";
+    ArrayList<String> listDirections;
+
 
     public FetchURL(Context mContext) {
         this.mContext = mContext;
+        listDirections = new ArrayList<>();
     }
 
     @Override
@@ -58,11 +62,15 @@ public class FetchURL extends AsyncTask<String, Void, String> {
             urlConnection.connect();
             // Reading data from url
             iStream = urlConnection.getInputStream();
+
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
             StringBuffer sb = new StringBuffer();
             String line = "";
             while ((line = br.readLine()) != null) {
                 sb.append(line);
+                if(line.contains("html_instructions")){
+                    decodeInstructions(line);
+                }
             }
             data = sb.toString();
             Log.d("mylog", "Downloaded URL: " + data.toString());
@@ -74,6 +82,14 @@ public class FetchURL extends AsyncTask<String, Void, String> {
             urlConnection.disconnect();
         }
         return data;
+    }
+
+
+    public void decodeInstructions(String str){
+        String[] strArr = str.split(":");
+        String val = strArr[1].replace(",", "");
+        listDirections.add(val.replaceAll("\\\\[^e]*e", ""));
+        Log.d("vals", listDirections.toString());
     }
 }
 

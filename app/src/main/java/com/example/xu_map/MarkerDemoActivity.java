@@ -30,6 +30,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SearchView;
@@ -82,6 +83,8 @@ import java.util.stream.Collectors;
 public class MarkerDemoActivity extends AppCompatActivity implements
         OnMarkerClickListener,
         OnInfoWindowClickListener,
+        View.OnHoverListener,
+        View.OnTouchListener,
         OnMarkerDragListener,
         OnSeekBarChangeListener,
         OnInfoWindowLongClickListener,
@@ -165,11 +168,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private boolean[] checkedItems;
     private ArrayList<Integer> mUserItems = new ArrayList<>();
     private List<Polyline> mPolyList;
-    private List<Marker> MarkerPoints;
+    private List<Marker> markerPoints;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
     private Polyline currentPolyline;
     private SearchView searhBar;
+    private View markerHover;
+    private View markerTouch;
 
 
 
@@ -198,9 +203,26 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         graphMap = MainActivity.gm;
         markerMap = new HashMap<>();
         markerMap2 = new HashMap<>();
-        MarkerPoints =  new ArrayList<>();
+        markerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
+        markerHover = findViewById(R.id.frameMap);
+        markerTouch = findViewById(R.id.frameMap);
 
+        markerTouch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Log.d(TAG, "onTouch: ");
+                return true;
+            }
+        });
+
+        markerHover.setOnHoverListener(new View.OnHoverListener() {
+            @Override
+            public boolean onHover(View view, MotionEvent motionEvent) {
+                Log.d(TAG, "onHover: ");
+                return true;
+            }
+        });
         searhBar = findViewById(R.id.search_bar);
         searhBar.setOnQueryTextListener(this);
         for (Location loc: objList.getAllLocs()){
@@ -291,6 +313,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // info window.
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
+
         // Set listeners for marker events.  See the bottom of this class for their behavior.
         mMap.setOnMarkerClickListener(this);
         mMap.setOnInfoWindowClickListener(this);
@@ -315,10 +338,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     }
                 }
 
+                onClearPath();
                 for (Marker keys: markerMap.keySet()){
                     keys.setVisible(false);
                 }
-
                 minMarker.setVisible(true);
             }
 
@@ -350,12 +373,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
 
             Marker tempMark = mMap.addMarker(new MarkerOptions()
-                   // .icon(BitmapDescriptorFactory.fromBitmap(bmp))
-                    .icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
+                    //.icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
                     .position(coord)
                     .title(WordUtils.capitalize(loc.getBuildName()))
-                    .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur));
-                    //.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
+                    .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+            Log.d(TAG, "addMarkersToMap: " + tempMark.getId());
 
             markerMap.put(tempMark, loc.getPurpose());
             markerMap2.put(loc, tempMark);
@@ -398,11 +422,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Polyline poly: mPolyList){
             poly.remove();
         }
-
-        for (Marker mp: MarkerPoints){
+        Log.d(TAG, "what ");
+        for (Marker mp: markerPoints){
             mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
-        MarkerPoints.removeAll(MarkerPoints);
+        markerPoints.removeAll(markerPoints);
 
     }
 
@@ -423,10 +447,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Polyline poly: mPolyList){
             poly.remove();
         }
-        for (Marker mp: MarkerPoints){
+        for (Marker mp: markerPoints){
+            mp.hideInfoWindow();
             mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
-        MarkerPoints.removeAll(MarkerPoints);
+        markerPoints.removeAll(markerPoints);
     }
 
 
@@ -460,23 +485,25 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        if(!MarkerPoints.contains(marker)){
-            MarkerPoints.add(marker);
+        FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+        if(!markerPoints.contains(marker)){
+            markerPoints.add(marker);
         }
-        if (MarkerPoints.size() >= 2 && MarkerPoints.get(MarkerPoints.size()-1).isVisible() &&
-                MarkerPoints.get(MarkerPoints.size()-2).isVisible()){
-            Marker origin = MarkerPoints.get(MarkerPoints.size()-2);
-            Marker dest = MarkerPoints.get(MarkerPoints.size()-1);
+        if (markerPoints.size() >= 2 && markerPoints.get(markerPoints.size()-1).isVisible() &&
+                markerPoints.get(markerPoints.size()-2).isVisible()){
+            Marker origin = markerPoints.get(markerPoints.size()-2);
+            Marker dest = markerPoints.get(markerPoints.size()-1);
 
             origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
             String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
-            FetchUrl.execute(url,"driving");
 
+            FetchUrl.execute(url,"driving");
             mMap.moveCamera(CameraUpdateFactory.newLatLng(origin.getPosition()));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+
         }
 
 
@@ -490,6 +517,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // We return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
         // marker is centered and for the marker's info window to open, if it has one).
+
         return false;
     }
 
@@ -518,6 +546,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     public void onTaskDone(Object... values) {
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
         mPolyList.add(currentPolyline);
+        Log.d(TAG, "onTaskDone: ");
     }
 
 
@@ -546,6 +575,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public void onMarkerDrag(Marker marker) {
+        Log.d(TAG, "onMarkerDrag: ");
     }
 
 
@@ -670,25 +700,39 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     public boolean onQueryTextSubmit(String s) {
         onClearPath();
         s = s.toLowerCase();
-        MarkerPoints = MarkerSearch(s.split(","));
-        for (int i = 0; i < MarkerPoints.size(); i++) {
-            Log.d(TAG, MarkerPoints.get(i).getTitle());
+        markerPoints = MarkerSearch(s.split(","));
+        for (int i = 0; i < markerPoints.size(); i++) {
+            Log.d(TAG, markerPoints.get(i).getTitle());
         }
 
         if(!s.contains(",")){
-            if(MarkerPoints.size() == 1){
-
+            if(markerPoints.size() == 1){
+                for (Marker markers : markerMap2.values()){
+                    markers.setVisible(false);
+                }
+                markerPoints.get(0).setVisible(true);
+                markerPoints.get(0).showInfoWindow();
             }else{
-                for(Marker mp: MarkerPoints){
-
+                for (Marker markers : markerMap2.values()){
+                    markers.setVisible(false);
+                }
+                for(Marker mp: markerPoints){
+                    mp.setVisible(true);
                 }
             }
         }else {
 
-            if (MarkerPoints.size() >= 2) {
-                for (int i = 1; i < MarkerPoints.size(); i++) {
-                    Marker origin = MarkerPoints.get(i - 1);
-                    Marker dest = MarkerPoints.get(i);
+            if (markerPoints.size() >= 2) {
+                for (int i = 1; i < markerPoints.size(); i++) {
+
+                    Marker origin = markerPoints.get(i - 1);
+                    Marker dest = markerPoints.get(i);
+
+                    if (!origin.isVisible() || !dest.isVisible()){
+                        origin.setVisible(true);
+                        dest.setVisible(true);
+
+                    }
 
                     origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                     dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
@@ -696,12 +740,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
                     FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
                     FetchUrl.execute(url, "driving");
+
                 }
             }
         }
+        markerPoints = new ArrayList<>();
         return false;
     }
-
 
 
     public ArrayList<Marker> MarkerSearch(String[] keywords){
@@ -736,6 +781,18 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public boolean onQueryTextChange(String s) {
         return false;
+    }
+
+    @Override
+    public boolean onHover(View view, MotionEvent motionEvent) {
+        Log.d(TAG, "onHover: ");
+        return true;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        Log.d(TAG, "onTouch: ");
+        return true;
     }
 
 
