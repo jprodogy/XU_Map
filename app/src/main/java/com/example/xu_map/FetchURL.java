@@ -20,15 +20,18 @@ public class FetchURL extends AsyncTask<String, Void, String> {
     Context mContext;
     String directionMode = "driving";
     ArrayList<String> listDirections;
+    TaskLoadedCallback taskCallback;
 
 
     public FetchURL(Context mContext) {
         this.mContext = mContext;
+        this.taskCallback = (TaskLoadedCallback) mContext;
         listDirections = new ArrayList<>();
     }
 
     @Override
     protected String doInBackground(String... strings) {
+
         // For storing data from web service
         String data = "";
         directionMode = strings[1];
@@ -72,6 +75,7 @@ public class FetchURL extends AsyncTask<String, Void, String> {
                     decodeInstructions(line);
                 }
             }
+            taskCallback.onRouteFound(listDirections);
             data = sb.toString();
             Log.d("mylog", "Downloaded URL: " + data.toString());
             br.close();

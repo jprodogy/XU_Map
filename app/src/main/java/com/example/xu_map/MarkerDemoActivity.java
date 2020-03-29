@@ -30,9 +30,10 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -83,8 +84,6 @@ import java.util.stream.Collectors;
 public class MarkerDemoActivity extends AppCompatActivity implements
         OnMarkerClickListener,
         OnInfoWindowClickListener,
-        View.OnHoverListener,
-        View.OnTouchListener,
         OnMarkerDragListener,
         OnSeekBarChangeListener,
         OnInfoWindowLongClickListener,
@@ -173,8 +172,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private boolean mPermissionDenied = false;
     private Polyline currentPolyline;
     private SearchView searhBar;
-    private View markerHover;
-    private View markerTouch;
+    public static boolean mMapIsTouched = false;
+    private ListView directionsList;
+
 
 
 
@@ -194,6 +194,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
         new OnMapAndViewReadyListener(mapFragment, this);
 
         catSelectBut = findViewById(R.id.action_select_category);
@@ -205,29 +206,12 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         markerMap2 = new HashMap<>();
         markerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
-        markerHover = findViewById(R.id.frameMap);
-        markerTouch = findViewById(R.id.frameMap);
-
-        markerTouch.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "onTouch: ");
-                return true;
-            }
-        });
-
-        markerHover.setOnHoverListener(new View.OnHoverListener() {
-            @Override
-            public boolean onHover(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "onHover: ");
-                return true;
-            }
-        });
         searhBar = findViewById(R.id.search_bar);
         searhBar.setOnQueryTextListener(this);
         for (Location loc: objList.getAllLocs()){
             Log.d(TAG, loc.getBuildName() + " " + loc.getKeywords().toString());
         }
+
 
     }
 
@@ -485,7 +469,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
         if(!markerPoints.contains(marker)){
             markerPoints.add(marker);
         }
@@ -493,7 +476,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 markerPoints.get(markerPoints.size()-2).isVisible()){
             Marker origin = markerPoints.get(markerPoints.size()-2);
             Marker dest = markerPoints.get(markerPoints.size()-1);
-
+            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
             origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
@@ -546,7 +529,21 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     public void onTaskDone(Object... values) {
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
         mPolyList.add(currentPolyline);
+
         Log.d(TAG, "onTaskDone: ");
+    }
+
+    @Override
+    public void onRouteFound(ArrayList<String> routeList) {
+        Log.d("stuff", routeList.toString());
+        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, routeList);
+        directionsList.setAdapter(arrayAdapter);
+
+    }
+
+    public void addDirections(){
+        //ArrayList<String> directions = FetchUrl.listDirections;
+
     }
 
 
@@ -782,20 +779,5 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     public boolean onQueryTextChange(String s) {
         return false;
     }
-
-    @Override
-    public boolean onHover(View view, MotionEvent motionEvent) {
-        Log.d(TAG, "onHover: ");
-        return true;
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        Log.d(TAG, "onTouch: ");
-        return true;
-    }
-
-
-
 
 }
