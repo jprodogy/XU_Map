@@ -31,9 +31,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -173,7 +171,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private Polyline currentPolyline;
     private SearchView searhBar;
     public static boolean mMapIsTouched = false;
-    private ListView directionsList;
 
 
 
@@ -208,6 +205,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mPolyList = new ArrayList<>();
         searhBar = findViewById(R.id.search_bar);
         searhBar.setOnQueryTextListener(this);
+
         for (Location loc: objList.getAllLocs()){
             Log.d(TAG, loc.getBuildName() + " " + loc.getKeywords().toString());
         }
@@ -536,9 +534,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     @Override
     public void onRouteFound(ArrayList<String> routeList) {
         Log.d("stuff", routeList.toString());
-        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, routeList);
-        //directionsList.setAdapter(arrayAdapter);
-
     }
 
     public void addDirections(){

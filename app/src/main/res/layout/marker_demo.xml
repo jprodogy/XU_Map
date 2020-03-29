@@ -31,7 +31,7 @@
     <FrameLayout
         android:id="@+id/frameMap"
         android:layout_width="match_parent"
-        android:layout_height="450dp"
+        android:layout_height="350dp"
         android:focusable="true"
         android:layout_below="@id/search_bar">
 
@@ -45,11 +45,12 @@
     </FrameLayout>
 
 
-    <ListView
+    <fragment
         android:id="@+id/directions_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/frameMap"/>
+        android:layout_below="@id/frameMap"
+        class="com.example.xu_map.directionsFragment"/>
 
 
 
