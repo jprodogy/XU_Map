@@ -537,7 +537,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     public void onRouteFound(ArrayList<String> routeList) {
         Log.d("stuff", routeList.toString());
         ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, routeList);
-        directionsList.setAdapter(arrayAdapter);
+        //directionsList.setAdapter(arrayAdapter);
 
     }
 
