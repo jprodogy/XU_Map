@@ -31,7 +31,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -171,12 +173,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private Polyline currentPolyline;
     private SearchView searhBar;
     public static boolean mMapIsTouched = false;
-
-
-
-
-
-
+    private ListView directionsListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,6 +202,8 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mPolyList = new ArrayList<>();
         searhBar = findViewById(R.id.search_bar);
         searhBar.setOnQueryTextListener(this);
+        directionsListView = findViewById(R.id.directions_list);
+
 
         for (Location loc: objList.getAllLocs()){
             Log.d(TAG, loc.getBuildName() + " " + loc.getKeywords().toString());
@@ -532,8 +531,12 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRouteFound(ArrayList<String> routeList) {
-        Log.d("stuff", routeList.toString());
+    public void onRouteFound(ArrayList<String> rawRouteList) {
+        Log.d("stuff", rawRouteList.toString());
+
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, android.R.id.text1, routeList);
+        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, rawRouteList);
+        directionsListView.setAdapter(adapter);
     }
 
     public void addDirections(){

@@ -19,13 +19,11 @@ import java.util.ArrayList;
 public class FetchURL extends AsyncTask<String, Void, String> {
     Context mContext;
     String directionMode = "driving";
-    ArrayList<String> listDirections;
-    TaskLoadedCallback taskCallback;
+    public static ArrayList<String> listDirections;
 
 
     public FetchURL(Context mContext) {
         this.mContext = mContext;
-        this.taskCallback = (TaskLoadedCallback) mContext;
         listDirections = new ArrayList<>();
     }
 
@@ -75,7 +73,7 @@ public class FetchURL extends AsyncTask<String, Void, String> {
                     decodeInstructions(line);
                 }
             }
-            taskCallback.onRouteFound(listDirections);
+
             data = sb.toString();
             Log.d("mylog", "Downloaded URL: " + data.toString());
             br.close();
@@ -92,7 +90,7 @@ public class FetchURL extends AsyncTask<String, Void, String> {
     public void decodeInstructions(String str){
         String[] strArr = str.split(":");
         String val = strArr[1].replace(",", "");
-        listDirections.add(val.replaceAll("\\\\[^e]*e", ""));
+        listDirections.add(val.replaceAll("\\\\[^e]*e", "").replaceAll("[^a-zA-Z0-9\\s]", ""));
         Log.d("vals", listDirections.toString());
     }
 }

@@ -55,6 +55,7 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
         ArrayList<LatLng> points;
         PolylineOptions lineOptions = null;
         // Traversing through all the routes
+        Log.d("why", result.toString());
         for (int i = 0; i < result.size(); i++) {
             points = new ArrayList<>();
             lineOptions = new PolylineOptions();
@@ -84,6 +85,7 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
         if (lineOptions != null) {
             //mMap.addPolyline(lineOptions);
             taskCallback.onTaskDone(lineOptions);
+            taskCallback.onRouteFound(FetchURL.listDirections);
         } else {
             Log.d("mylog", "without Polylines drawn");
         }

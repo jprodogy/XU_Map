@@ -45,12 +45,11 @@
     </FrameLayout>
 
 
-    <fragment
+    <ListView
         android:id="@+id/directions_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/frameMap"
-        class="com.example.xu_map.directionsFragment"/>
+        android:layout_below="@id/frameMap"/>
 
 
 
