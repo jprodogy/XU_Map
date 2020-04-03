@@ -72,6 +72,7 @@ import com.google.maps.android.ui.IconGenerator;
 import org.apache.commons.text.WordUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -307,23 +308,16 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                Double min = Double.MAX_VALUE;
-                Marker minMarker = null;
-
+                onClearPath();
                 for (Marker keys: markerMap.keySet()) {
-                    Double dist = distance2(latLng, keys.getPosition());
-
-                    if (dist < min){
-                        min = dist;
-                        minMarker = keys;
+                    boolean res;
+                    if (res = inRadius(latLng, keys.getPosition())){
+                        Log.d("really", String.valueOf(res));
+                        keys.setVisible(true);
+                    }else{
+                        keys.setVisible(false);
                     }
                 }
-
-                onClearPath();
-                for (Marker keys: markerMap.keySet()){
-                    keys.setVisible(false);
-                }
-                minMarker.setVisible(true);
             }
 
         });
@@ -337,6 +331,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
+        ArrayList<String> numbers = new ArrayList<>(Arrays.asList("chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
+
+
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for(Location loc: objList.getAllLocs()){
@@ -360,7 +357,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-            Log.d(TAG, "addMarkersToMap: " + tempMark.getId());
+            if(!numbers.contains(loc.getBuildName())){
+                tempMark.setVisible(false);
+            }
 
             markerMap.put(tempMark, loc.getPurpose());
             markerMap2.put(loc, tempMark);
@@ -775,7 +774,17 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onQueryTextChange(String s) {
+
         return false;
     }
+
+    public boolean inRadius(LatLng circleXY, LatLng locXY)
+    {
+        double distanceInMeters = distance2(circleXY, locXY);
+        Log.d("answ", String.valueOf(distanceInMeters));
+        return distanceInMeters < 0.2;
+
+    }
+
 
 }
