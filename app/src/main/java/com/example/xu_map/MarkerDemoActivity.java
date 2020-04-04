@@ -67,15 +67,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.ui.IconGenerator;
 
 import org.apache.commons.text.WordUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -175,6 +176,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private SearchView searhBar;
     public static boolean mMapIsTouched = false;
     private ListView directionsListView;
+    private Marker xula;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -234,6 +236,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 public void onClick(DialogInterface dialogInterface, int which) {
 
                     List<String> item = new ArrayList<>();
+                    if (!mUserItems.isEmpty()){
+                        onClearPath();
+
+                    }
 
                     for (int i = 0; i < mUserItems.size(); i++) {
                         item.add(listItems[mUserItems.get(i)]);
@@ -309,6 +315,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             @Override
             public void onMapClick(LatLng latLng) {
                 onClearPath();
+                ClearDirections();
                 for (Marker keys: markerMap.keySet()) {
                     boolean res;
                     if (res = inRadius(latLng, keys.getPosition())){
@@ -317,6 +324,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     }else{
                         keys.setVisible(false);
                     }
+                }
+                if (inRadius(latLng, xula.getPosition())){
+                    xula.setVisible(true);
+                }else{
+                    xula.setVisible(false);
                 }
             }
 
@@ -331,9 +343,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
-        ArrayList<String> numbers = new ArrayList<>(Arrays.asList("chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
-
-
+        ArrayList<String> intialMarkers = new ArrayList<>(Arrays.asList("chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for(Location loc: objList.getAllLocs()){
@@ -344,27 +354,30 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
             bounds.include(coord);
 
-            IconGenerator mIconGenerator = new IconGenerator(this);
-            mIconGenerator.setStyle(IconGenerator.STYLE_GREEN);
-            mIconGenerator.setContentRotation(90);
-            Bitmap iconBitmap = mIconGenerator.makeIcon(WordUtils.capitalize(loc.getBuildName()));
-
-
             Marker tempMark = mMap.addMarker(new MarkerOptions()
-                    //.icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
                     .position(coord)
                     .title(WordUtils.capitalize(loc.getBuildName()))
                     .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-            if(!numbers.contains(loc.getBuildName())){
-                tempMark.setVisible(false);
-            }
 
             markerMap.put(tempMark, loc.getPurpose());
             markerMap2.put(loc, tempMark);
         }
+
+        xula = mMap.addMarker(new MarkerOptions().position(new LatLng(29.964127, -90.107652)).title("Xavier University of Louisiana").visible(false));
+        IntialMarkersVisible();
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+
+    }
+
+    public void IntialMarkersVisible(){
+        onClearMap();
+        List<String> intialNames = new ArrayList<>(Arrays.asList("st. katharine drexel chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
+        for(String str: intialNames){
+            Location loc = objList.getLocation(str);
+            markerMap2.get(loc).setVisible(true);
+        }
 
     }
 
@@ -399,14 +412,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
             entry.getKey().setVisible(false);
         }
-        for (Polyline poly: mPolyList){
-            poly.remove();
-        }
-        Log.d(TAG, "what ");
-        for (Marker mp: markerPoints){
-            mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-        }
-        markerPoints.removeAll(markerPoints);
+        onClearPath();
 
     }
 
@@ -432,6 +438,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
         markerPoints.removeAll(markerPoints);
+        ClearDirections();
     }
 
 
@@ -465,9 +472,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        if(!markerPoints.contains(marker)){
+        if (marker.equals(xula)){
+            xula.setVisible(true);
+            IntialMarkersVisible();
+        }else if(!markerPoints.contains(marker)){
             markerPoints.add(marker);
         }
+
         if (markerPoints.size() >= 2 && markerPoints.get(markerPoints.size()-1).isVisible() &&
                 markerPoints.get(markerPoints.size()-2).isVisible()){
             Marker origin = markerPoints.get(markerPoints.size()-2);
@@ -484,8 +495,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
 
         }
-
-
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
         marker.setZIndex(zIndex);
@@ -501,6 +510,45 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
 
+    public boolean OptimalPath(){
+
+        if (markerPoints.size() > 2){
+            Queue<Location> locQueue = new LinkedList<>();
+
+            for (Marker mark: markerPoints){
+                Location loc = objList.getLocViaName(mark.getTitle().toLowerCase());
+                locQueue.add(loc);
+            }
+
+            ShortestPath path = new ShortestPath(graphMap);
+            onClearPath();
+
+            for(Location loc: path.CalcShortestPath(locQueue)){
+                Log.d("stuff", loc.getBuildName());
+                markerPoints.add(markerMap2.get(loc));
+            }
+
+            Log.d("val", markerPoints.toString() );
+            for (int i = 1; i < markerPoints.size(); i++) {
+                Marker origin = markerPoints.get(i - 1);
+                Marker dest = markerPoints.get(i);
+
+                if (!origin.isVisible() || !dest.isVisible()){
+                    origin.setVisible(true);
+                    dest.setVisible(true);
+
+                }
+                origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+                String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
+                FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+                FetchUrl.execute(url, "driving");
+            }
+
+        }
+        return false;
+    }
 
 
 
@@ -538,11 +586,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         directionsListView.setAdapter(adapter);
     }
 
-    public void addDirections(){
-        //ArrayList<String> directions = FetchUrl.listDirections;
-
+    public void ClearDirections(){
+        ArrayList empty = new ArrayList();
+        ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, empty);
+        directionsListView.setAdapter(adapter);
     }
-
 
     @Override
     public void onInfoWindowClick(Marker marker) {
@@ -684,6 +732,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             case R.id.action_remove_path:
                 onClearPath();
                 return true;
+            case R.id.action_optimize_path:
+                OptimalPath();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -778,10 +829,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         return false;
     }
 
-    public boolean inRadius(LatLng circleXY, LatLng locXY)
-    {
+    public boolean inRadius(LatLng circleXY, LatLng locXY){
+
         double distanceInMeters = distance2(circleXY, locXY);
-        Log.d("answ", String.valueOf(distanceInMeters));
         return distanceInMeters < 0.2;
 
     }

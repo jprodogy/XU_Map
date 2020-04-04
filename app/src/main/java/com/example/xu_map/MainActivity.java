@@ -7,8 +7,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -44,17 +42,22 @@ public class MainActivity extends AppCompatActivity {
 
         for (Map.Entry<String,Location> entry : obj.newObjects.entrySet()){
             gm.addVertex(entry.getValue());
+            Log.d("Creating vertices", entry.getKey() + " " + entry.getValue().getBuildName());
         }
 
         for (Location val: gm.getVertices()){
             for (Location val2: gm.getVertices()){
                 Double dist = distance(val.getLatitude(), val.getLongitude(), val2.getLatitude(), val2.getLongitude());
                 gm.addEdge(val,val2, dist, true);
+
             }
         }
 
-        for (Location val: gm.getVertices()){
-            Log.d(TAG,gm.getEdges(val).toString());
+        for (Location val: gm.getVertices()) {
+
+            for (GraphMap.Edge lv: gm.getEdges(val)){
+                Log.d(val.getBuildName(),lv.weight + " " + lv.destination.getBuildName());
+            }
         }
 
 /*

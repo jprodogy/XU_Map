@@ -29,5 +29,13 @@
         app:showAsAction="never"
         />
 
+    <item
+        android:id="@+id/action_optimize_path"
+        android:orderInCategory="100"
+        android:title="Re-Route Path"
+        app:showAsAction="never"
+        />
+
+
 
 </menu>

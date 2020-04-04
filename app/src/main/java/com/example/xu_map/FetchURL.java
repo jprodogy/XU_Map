@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class FetchURL extends AsyncTask<String, Void, String> {
     Context mContext;
-    String directionMode = "driving";
+    String directionMode = "Walking";
     public static ArrayList<String> listDirections;
 
 
