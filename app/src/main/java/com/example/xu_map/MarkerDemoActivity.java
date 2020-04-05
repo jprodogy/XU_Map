@@ -32,7 +32,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SeekBar;
@@ -77,7 +76,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -159,12 +157,9 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     private Objects objList;
     private GraphMap graphMap;
-    private Map< Marker, List<String>> markerMap;
     private Map<Location, Marker> markerMap2;
     private Marker mLastSelectedMarker;
     private final List<Marker> mMarkerRainbow = new ArrayList<Marker>();
-    private final Random mRandom = new Random();
-    private Button catSelectBut;
     private String[] listItems;
     private boolean[] checkedItems;
     private ArrayList<Integer> mUserItems = new ArrayList<>();
@@ -194,12 +189,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         new OnMapAndViewReadyListener(mapFragment, this);
 
-        catSelectBut = findViewById(R.id.action_select_category);
-        listItems = getResources().getStringArray(R.array.shopping_item);
+        listItems = getResources().getStringArray(R.array.categories);
         checkedItems = new boolean[listItems.length];
         objList = MainActivity.obj;
         graphMap = MainActivity.gm;
-        markerMap = new HashMap<>();
         markerMap2 = new HashMap<>();
         markerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
@@ -237,18 +230,23 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
                     List<String> item = new ArrayList<>();
                     if (!mUserItems.isEmpty()){
-                        onClearPath();
-
+                        ClearPath();
                     }
 
                     for (int i = 0; i < mUserItems.size(); i++) {
-                        item.add(listItems[mUserItems.get(i)]);
+                        String str = listItems[mUserItems.get(i)];
+                        if (str.contains("/")){
+                            item.addAll(Arrays.asList(str.split("/")));
+                        }else {
+                            item.add(str);
+                        }
                     }
 
-                    for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()){
-                        entry.getKey().setVisible(listCheck(item, entry.getValue()));
-
+                    for(Location loc: objList.getAllLocs()){
+                        Marker mark = markerMap2.get(loc);
+                        mark.setVisible(listCheck(item, loc.getPurpose()));
                     }
+
                 }
             });
 
@@ -267,8 +265,8 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                         mUserItems.clear();
                     }
 
-                    for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
-                        entry.getKey().setVisible(true);
+                    for (Marker mark: markerMap2.values()) {
+                        mark.setVisible(true);
                     }
                 }
             });
@@ -278,6 +276,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     public Boolean listCheck(List<String> list1, List<String> list2){
+        Log.d("listcheck", list1.toString() + " " + list2.toString());
         for (int i = 0; i < list1.size(); i++){
             if (list2.contains(list1.get(i))){
                 return true;
@@ -296,12 +295,10 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         // Add lots of markers to the map.
         addMarkersToMap();
-
+        
         // Setting an info window adapter allows us to change the both the contents and look of the
         // info window.
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
-
-
         // Set listeners for marker events.  See the bottom of this class for their behavior.
         mMap.setOnMarkerClickListener(this);
         mMap.setOnInfoWindowClickListener(this);
@@ -309,17 +306,14 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         mMap.setOnInfoWindowCloseListener(this);
         mMap.setOnInfoWindowLongClickListener(this);
         mMap.setOnMyLocationButtonClickListener(this);
-
         mMap.setOnMyLocationClickListener(this);
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                onClearPath();
+                ClearPath();
                 ClearDirections();
-                for (Marker keys: markerMap.keySet()) {
-                    boolean res;
-                    if (res = inRadius(latLng, keys.getPosition())){
-                        Log.d("really", String.valueOf(res));
+                for (Marker keys: markerMap2.values()) {
+                    if (inRadius(latLng, keys.getPosition())){
                         keys.setVisible(true);
                     }else{
                         keys.setVisible(false);
@@ -343,7 +337,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         // Override the default content description on the view, for accessibility mode.
         // Ideally this string would be localised.
         mMap.setContentDescription("Map with lots of markers.");
-        ArrayList<String> intialMarkers = new ArrayList<>(Arrays.asList("chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for(Location loc: objList.getAllLocs()){
@@ -359,9 +352,6 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     .title(WordUtils.capitalize(loc.getBuildName()))
                     .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-
-            markerMap.put(tempMark, loc.getPurpose());
             markerMap2.put(loc, tempMark);
         }
 
@@ -372,7 +362,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     public void IntialMarkersVisible(){
-        onClearMap();
+        ClearMap();
         List<String> intialNames = new ArrayList<>(Arrays.asList("st. katharine drexel chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
         for(String str: intialNames){
             Location loc = objList.getLocation(str);
@@ -405,31 +395,31 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     /** Called when the Clear button is clicked. */
-    public void onClearMap() {
+    public void ClearMap() {
         if (!checkReady()) {
             return;
         }
-        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
-            entry.getKey().setVisible(false);
+        for (Marker mark: markerMap2.values()) {
+            mark.setVisible(false);
         }
-        onClearPath();
+        ClearPath();
 
     }
 
     /** Called when the Reset button is clicked. */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void onResetMap() {
+    public void ResetMap() {
         if (!checkReady()) {
             return;
         }
-        for (Map.Entry<Marker, List<String>> entry : markerMap.entrySet()) {
-            entry.getKey().setVisible(true);
+        for (Marker mark: markerMap2.values()) {
+            mark.setVisible(true);
         }
         addMarkersToMap();
-        onClearPath();
+        ClearPath();
     }
 
-    public void onClearPath() {
+    public void ClearPath() {
         for (Polyline poly: mPolyList){
             poly.remove();
         }
@@ -439,6 +429,17 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         }
         markerPoints.removeAll(markerPoints);
         ClearDirections();
+    }
+
+    public void ClearPathKeepMP() {
+        for (Polyline poly: mPolyList){
+            poly.remove();
+        }
+        for (Marker mp: markerPoints){
+            mp.hideInfoWindow();
+            mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+        }
+        markerPoints.removeAll(markerPoints);
     }
 
 
@@ -478,23 +479,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         }else if(!markerPoints.contains(marker)){
             markerPoints.add(marker);
         }
-
-        if (markerPoints.size() >= 2 && markerPoints.get(markerPoints.size()-1).isVisible() &&
-                markerPoints.get(markerPoints.size()-2).isVisible()){
-            Marker origin = markerPoints.get(markerPoints.size()-2);
-            Marker dest = markerPoints.get(markerPoints.size()-1);
-            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
-            origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-            dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-
-            String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-
-            FetchUrl.execute(url,"driving");
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(origin.getPosition()));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-
-        }
+        RouteCreatorS();
         // Markers have a z-index that is settable and gettable.
         float zIndex = marker.getZIndex() + 1.0f;
         marker.setZIndex(zIndex);
@@ -521,7 +506,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             }
 
             ShortestPath path = new ShortestPath(graphMap);
-            onClearPath();
+            ClearPath();
 
             for(Location loc: path.CalcShortestPath(locQueue)){
                 Log.d("stuff", loc.getBuildName());
@@ -529,28 +514,33 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             }
 
             Log.d("val", markerPoints.toString() );
-            for (int i = 1; i < markerPoints.size(); i++) {
-                Marker origin = markerPoints.get(i - 1);
-                Marker dest = markerPoints.get(i);
-
-                if (!origin.isVisible() || !dest.isVisible()){
-                    origin.setVisible(true);
-                    dest.setVisible(true);
-
-                }
-                origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-
-                String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-                FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
-                FetchUrl.execute(url, "driving");
-            }
+            RouteCreatorM();
 
         }
         return false;
     }
 
+    public void ReRoutePath(){
+        ClearPathKeepMP();
+        for (int i = 1; i < markerPoints.size()-1; i++){
+            int min_idx = i;
+            double min_val = Integer.MAX_VALUE;
+            double dist;
 
+            for (int j = i+1; j < markerPoints.size(); j++){
+                dist = distance2(markerPoints.get(i).getPosition(), markerPoints.get(j).getPosition());
+                if (dist < min_val) {
+                    min_idx = j;
+                    min_val = dist;
+                }
+            }
+
+            Marker temp = markerPoints.get(min_idx);
+            markerPoints.set(min_idx, markerPoints.get(i));
+            markerPoints.set(i, temp);
+        }
+        RouteCreatorM();
+    }
 
 
     private String getUrl(LatLng origin, LatLng dest, String directionMode) {
@@ -724,16 +714,16 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 CreateDropdownMenu();
                 return true;
             case R.id.action_clear:
-                onClearMap();
+                ClearMap();
                 return true;
             case R.id.action_reset:
-                onResetMap();
+                ResetMap();
                 return true;
             case R.id.action_remove_path:
-                onClearPath();
+                ClearPath();
                 return true;
             case R.id.action_optimize_path:
-                OptimalPath();
+                ReRoutePath();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -743,7 +733,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onQueryTextSubmit(String s) {
-        onClearPath();
+        ClearPath();
         s = s.toLowerCase();
         markerPoints = MarkerSearch(s.split(","));
         for (int i = 0; i < markerPoints.size(); i++) {
@@ -766,28 +756,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 }
             }
         }else {
-
-            if (markerPoints.size() >= 2) {
-                for (int i = 1; i < markerPoints.size(); i++) {
-
-                    Marker origin = markerPoints.get(i - 1);
-                    Marker dest = markerPoints.get(i);
-
-                    if (!origin.isVisible() || !dest.isVisible()){
-                        origin.setVisible(true);
-                        dest.setVisible(true);
-
-                    }
-
-                    origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                    dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-
-                    String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-                    FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
-                    FetchUrl.execute(url, "driving");
-
-                }
-            }
+            RouteCreatorM();
         }
         markerPoints = new ArrayList<>();
         return false;
@@ -795,7 +764,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
 
     public ArrayList<Marker> MarkerSearch(String[] keywords){
-        onClearPath();
+        ClearPath();
         ArrayList<Marker> foundMarkers = new ArrayList<>();
         for(String key: keywords){
             key = key.trim();
@@ -821,6 +790,47 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             }
         }
         return foundMarkers;
+    }
+
+    public void RouteCreatorM(){
+        if(markerPoints.size() > 2){
+            for (int i = 1; i < markerPoints.size(); i++) {
+                Marker origin = markerPoints.get(i - 1);
+                Marker dest = markerPoints.get(i);
+
+                if (!origin.isVisible() || !dest.isVisible()){
+                    origin.setVisible(true);
+                    dest.setVisible(true);
+
+                }
+                origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+                String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
+                FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+                FetchUrl.execute(url, "driving");
+            }
+
+        }
+    }
+
+    public void RouteCreatorS(){
+        if (markerPoints.size() >= 2 && markerPoints.get(markerPoints.size()-1).isVisible() &&
+                markerPoints.get(markerPoints.size()-2).isVisible()){
+            Marker origin = markerPoints.get(markerPoints.size()-2);
+            Marker dest = markerPoints.get(markerPoints.size()-1);
+            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+            origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+            String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
+
+            FetchUrl.execute(url,"driving");
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(origin.getPosition()));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+
+        }
     }
 
     @Override

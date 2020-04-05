@@ -17,11 +17,11 @@
     <string name="dismiss_label">Dismiss</string>
     <string name="clear_all_label">Clear all</string>
 
-    <string-array name="shopping_item">
+    <string-array name="categories">
         <item>Administrative</item>
         <item>Academic</item>
         <item>Faith</item>
-        <item>Residential Halls</item>
+        <item>Residential Hall</item>
         <item>Recreation/Dining</item>
         <item>Operations</item>
         <item>Landmarks</item>

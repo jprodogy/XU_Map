@@ -47,16 +47,19 @@ public class MainActivity extends AppCompatActivity {
 
         for (Location val: gm.getVertices()){
             for (Location val2: gm.getVertices()){
-                Double dist = distance(val.getLatitude(), val.getLongitude(), val2.getLatitude(), val2.getLongitude());
-                gm.addEdge(val,val2, dist, true);
-
+                if (!val.getBuildName().equals(val2.getBuildName()) && gm.getEdge(val, val2) == null){
+                    Double dist = distance(val.getLatitude(), val.getLongitude(), val2.getLatitude(), val2.getLongitude());
+                    gm.addEdge(val,val2, dist, true);
+                    Log.d(TAG, val.getBuildName() + " " + val2.getBuildName() + " " + dist);
+                }
             }
         }
-
         for (Location val: gm.getVertices()) {
+            for (Location val2: gm.getVertices()){
+                if (!val.getBuildName().equals(val2.getBuildName())){
+                    Log.d("edges", val.getBuildName() + " " + val2.getBuildName() + " " +  gm.getEdge(val, val2).weight);
 
-            for (GraphMap.Edge lv: gm.getEdges(val)){
-                Log.d(val.getBuildName(),lv.weight + " " + lv.destination.getBuildName());
+                }
             }
         }
 
