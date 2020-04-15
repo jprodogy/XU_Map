@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         ObjectCreator();
         MapCreator();
         ShortestPath();
-        Intent intent = new Intent(this, MarkerDemoActivity.class);
+        Intent intent = new Intent(this, XUMapActivity.class);
         startActivity(intent);
     }
 

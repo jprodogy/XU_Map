@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Vishal on 10/20/2018.
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 public class FetchURL extends AsyncTask<String, Void, String> {
     Context mContext;
     String directionMode = "Walking";
-    public static ArrayList<String> listDirections;
+    public static List<String> listDirections;
 
 
     public FetchURL(Context mContext) {

@@ -1,9 +1,9 @@
 package com.example.xu_map;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskLoadedCallback {
     void onTaskDone(Object... values);
-    void onRouteFound(ArrayList<String> values);
+    void onRouteFound(List<String> values);
 
 }

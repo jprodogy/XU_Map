@@ -81,7 +81,7 @@ import java.util.stream.Collectors;
 /**
  * This shows how to place markers on a map.
  */
-public class MarkerDemoActivity extends AppCompatActivity implements
+public class XUMapActivity extends AppCompatActivity implements
         OnMarkerClickListener,
         OnInfoWindowClickListener,
         OnMarkerDragListener,
@@ -91,9 +91,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
         TaskLoadedCallback,
-        OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener, SearchView.OnQueryTextListener {
-
-
+        OnMapAndViewReadyListener.OnGlobalLayoutAndMapReadyListener, SearchView.OnQueryTextListener{
 
 
     /** Demonstrates customizing the info window and/or its contents. */
@@ -154,15 +152,15 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         }
     }
     private static final String TAG = "MarkerDemoActivity";
-    private GoogleMap mMap;
+    public static GoogleMap mMap;
     private Objects objList;
     private GraphMap graphMap;
-    private Map<Location, Marker> markerMap2;
+    public static Map<Location, Marker> markerMap;
     private Marker mLastSelectedMarker;
     private final List<Marker> mMarkerRainbow = new ArrayList<Marker>();
     private String[] listItems;
     private boolean[] checkedItems;
-    private ArrayList<Integer> mUserItems = new ArrayList<>();
+    private List<Integer> mUserItems = new ArrayList<>();
     private List<Polyline> mPolyList;
     private List<Marker> markerPoints;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -193,7 +191,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         checkedItems = new boolean[listItems.length];
         objList = MainActivity.obj;
         graphMap = MainActivity.gm;
-        markerMap2 = new HashMap<>();
+        markerMap = new HashMap<>();
         markerPoints =  new ArrayList<>();
         mPolyList = new ArrayList<>();
         searhBar = findViewById(R.id.search_bar);
@@ -210,7 +208,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     public void CreateDropdownMenu(){
 
-            AlertDialog.Builder mBuilder = new AlertDialog.Builder(MarkerDemoActivity.this);
+            AlertDialog.Builder mBuilder = new AlertDialog.Builder(XUMapActivity.this);
             mBuilder.setTitle(R.string.dialog_title);
             mBuilder.setMultiChoiceItems(listItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
                 @Override
@@ -243,7 +241,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     }
 
                     for(Location loc: objList.getAllLocs()){
-                        Marker mark = markerMap2.get(loc);
+                        Marker mark = markerMap.get(loc);
                         mark.setVisible(listCheck(item, loc.getPurpose()));
                     }
 
@@ -265,7 +263,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                         mUserItems.clear();
                     }
 
-                    for (Marker mark: markerMap2.values()) {
+                    for (Marker mark: markerMap.values()) {
                         mark.setVisible(true);
                     }
                 }
@@ -295,7 +293,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         // Add lots of markers to the map.
         addMarkersToMap();
-        
+
         // Setting an info window adapter allows us to change the both the contents and look of the
         // info window.
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
@@ -312,11 +310,11 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             public void onMapClick(LatLng latLng) {
                 ClearPath();
                 ClearDirections();
-                for (Marker keys: markerMap2.values()) {
-                    if (inRadius(latLng, keys.getPosition())){
-                        keys.setVisible(true);
+                for (Marker marker: markerMap.values()) {
+                    if (inRadius(latLng, marker.getPosition())){
+                        marker.setVisible(true);
                     }else{
-                        keys.setVisible(false);
+                        marker.setVisible(false);
                     }
                 }
                 if (inRadius(latLng, xula.getPosition())){
@@ -352,12 +350,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                     .title(WordUtils.capitalize(loc.getBuildName()))
                     .snippet("Building #"+ loc.getBuildNum()  +"\n" + "Purpose: "  + pur)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-            markerMap2.put(loc, tempMark);
+            markerMap.put(loc, tempMark);
         }
 
         xula = mMap.addMarker(new MarkerOptions().position(new LatLng(29.964127, -90.107652)).title("Xavier University of Louisiana").visible(false));
         IntialMarkersVisible();
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+        Log.d(TAG, markerMap.values().toString());
 
     }
 
@@ -366,7 +365,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         List<String> intialNames = new ArrayList<>(Arrays.asList("st. katharine drexel chapel", "ncf science addition", "ncf science annex", "university center", "student fitness center", "library resource center", "xavier south", "convocation academic center"));
         for(String str: intialNames){
             Location loc = objList.getLocation(str);
-            markerMap2.get(loc).setVisible(true);
+            markerMap.get(loc).setVisible(true);
         }
 
     }
@@ -399,7 +398,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         if (!checkReady()) {
             return;
         }
-        for (Marker mark: markerMap2.values()) {
+        for (Marker mark: markerMap.values()) {
             mark.setVisible(false);
         }
         ClearPath();
@@ -412,7 +411,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
         if (!checkReady()) {
             return;
         }
-        for (Marker mark: markerMap2.values()) {
+        for (Marker mark: markerMap.values()) {
             mark.setVisible(true);
         }
         addMarkersToMap();
@@ -439,7 +438,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
             mp.hideInfoWindow();
             mp.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
-        markerPoints.removeAll(markerPoints);
+        ClearDirections();
     }
 
 
@@ -510,7 +509,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
             for(Location loc: path.CalcShortestPath(locQueue)){
                 Log.d("stuff", loc.getBuildName());
-                markerPoints.add(markerMap2.get(loc));
+                markerPoints.add(markerMap.get(loc));
             }
 
             Log.d("val", markerPoints.toString() );
@@ -522,6 +521,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
     public void ReRoutePath(){
         ClearPathKeepMP();
+        Log.d(TAG, markerPoints.toString());
         for (int i = 1; i < markerPoints.size()-1; i++){
             int min_idx = i;
             double min_val = Integer.MAX_VALUE;
@@ -568,7 +568,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRouteFound(ArrayList<String> rawRouteList) {
+    public void onRouteFound(List<String> rawRouteList) {
         Log.d("stuff", rawRouteList.toString());
 
         //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, android.R.id.text1, routeList);
@@ -577,7 +577,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
     public void ClearDirections(){
-        ArrayList empty = new ArrayList();
+        List empty = new ArrayList();
         ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, empty);
         directionsListView.setAdapter(adapter);
     }
@@ -742,13 +742,13 @@ public class MarkerDemoActivity extends AppCompatActivity implements
 
         if(!s.contains(",")){
             if(markerPoints.size() == 1){
-                for (Marker markers : markerMap2.values()){
+                for (Marker markers : markerMap.values()){
                     markers.setVisible(false);
                 }
                 markerPoints.get(0).setVisible(true);
                 markerPoints.get(0).showInfoWindow();
             }else{
-                for (Marker markers : markerMap2.values()){
+                for (Marker markers : markerMap.values()){
                     markers.setVisible(false);
                 }
                 for(Marker mp: markerPoints){
@@ -763,28 +763,26 @@ public class MarkerDemoActivity extends AppCompatActivity implements
     }
 
 
-    public ArrayList<Marker> MarkerSearch(String[] keywords){
+    public List<Marker> MarkerSearch(String[] keywords){
         ClearPath();
-        ArrayList<Marker> foundMarkers = new ArrayList<>();
+        List<Marker> foundMarkers = new ArrayList<>();
         for(String key: keywords){
             key = key.trim();
-
-            Log.d(TAG, key);
             try{
                 int val = Integer.valueOf(key);
                 Location loc = null;
                 if((loc = objList.getLocViaNum(val)) != null){
-                    foundMarkers.add(markerMap2.get(loc));
+                    foundMarkers.add(markerMap.get(loc));
                 }
             }catch (Exception e) {
                 Location loc = null;
-                ArrayList<Location> locs = null;
+                List<Location> locs = null;
                 if((loc = objList.getLocation(key)) != null){
-                    foundMarkers.add(markerMap2.get(loc));
+                    foundMarkers.add(markerMap.get(loc));
 
                 }else if((locs = objList.getAllViaKey(key)) != null){
                     for (Location val: locs){
-                        foundMarkers.add(markerMap2.get(val));
+                        foundMarkers.add(markerMap.get(val));
                     }
                 }
             }
@@ -807,7 +805,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
                 String url = getUrl(origin.getPosition(), dest.getPosition(), "driving");
-                FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+                FetchURL FetchUrl = new FetchURL(XUMapActivity.this);
                 FetchUrl.execute(url, "driving");
             }
 
@@ -819,7 +817,7 @@ public class MarkerDemoActivity extends AppCompatActivity implements
                 markerPoints.get(markerPoints.size()-2).isVisible()){
             Marker origin = markerPoints.get(markerPoints.size()-2);
             Marker dest = markerPoints.get(markerPoints.size()-1);
-            FetchURL FetchUrl = new FetchURL(MarkerDemoActivity.this);
+            FetchURL FetchUrl = new FetchURL(XUMapActivity.this);
             origin.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             dest.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
